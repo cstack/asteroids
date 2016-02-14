@@ -13,6 +13,10 @@ const meters SCREEN_HEIGHT = SCREEN_HEIGHT_PIXELS * PIXELS_TO_METERS;
 
 const meters PLAYER_SPEED_METERS_PER_SECOND = 8;
 const color_t PLAYER_COLOR = rgb(200, 200, 255);
+const meters PLAYER_WIDTH = 2;
+const meters PLAYER_HEIGHT = 2;
+const pixels PLAYER_WIDTH_PIXELS = PLAYER_WIDTH * METERS_TO_PIXELS;
+const pixels PLAYER_HEIGHT_PIXELS = PLAYER_HEIGHT * METERS_TO_PIXELS;
 
 void put_pixel(pixel_buffer_t* pixel_buffer, uint x, uint y, color_t color) {
   x %= pixel_buffer->width;
@@ -33,8 +37,8 @@ void draw_box(pixel_buffer_t* pixel_buffer, double x, double y, double width, do
 }
 
 void initialize_game_state(game_state_t &game_state) {
-  game_state.player_location.x = 0;
-  game_state.player_location.y = 0;
+  game_state.player_location.x = SCREEN_WIDTH/2;
+  game_state.player_location.y = SCREEN_HEIGHT/2;
 
   game_state.initialized = true;
 }
@@ -50,7 +54,7 @@ screen_location_t get_screen_location(location_t location) {
   return screen_location;
 }
 
-location_t update_location(location_t location, meters dx, meters dy) {
+location_t translate(location_t location, meters dx, meters dy) {
   location.x = wrap(location.x + dx, 0, SCREEN_WIDTH);
   location.y = wrap(location.y + dy, 0, SCREEN_HEIGHT);
   return location;
@@ -79,16 +83,17 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
   if (controller.up_pressed) {
     dy -= PLAYER_SPEED_METERS_PER_SECOND * dt;
   }
-  game_state.player_location = update_location(game_state.player_location, dx, dy);
+  game_state.player_location = translate(game_state.player_location, dx, dy);
 
   // Render Player
-  screen_location_t screen_location = get_screen_location(player_location);
+  location_t player_top_left = translate(game_state.player_location, -PLAYER_WIDTH/2, -PLAYER_HEIGHT/2);
+  screen_location_t screen_location = get_screen_location(player_top_left);
   draw_box(
     pixel_buffer,
     screen_location.x,
     screen_location.y,
-    100,
-    100,
+    PLAYER_WIDTH_PIXELS,
+    PLAYER_HEIGHT_PIXELS,
     PLAYER_COLOR
   );
 }
