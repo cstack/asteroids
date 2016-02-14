@@ -3,6 +3,7 @@
 
 void assert(bool expression, const char* message);
 double clip(double value, double min, double max);
+double wrap(double value, double min, double max);
 int round(double value);
 
 #endif

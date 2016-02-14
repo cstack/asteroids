@@ -17,6 +17,17 @@ double clip(double value, double min, double max) {
   return value;
 }
 
+double wrap(double value, double min, double max) {
+  double range = max - min;
+  while (value < min) {
+    value += range;
+  }
+  while (value > max) {
+    value -= range;
+  }
+  return value;
+}
+
 int round(double value) {
   return (int) (value + 0.5);
 }
