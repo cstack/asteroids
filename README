@@ -1,0 +1,9 @@
+Make sure PEPPER_DIR environment variable is the path to your pepper sdk directory, e.g. /Users/cstack/Development/nacl_sdk/pepper_46
+
+Compile and serve the application with:
+
+./run.sh
+
+Create a publishable Chrome app with:
+
+./publish.sh
