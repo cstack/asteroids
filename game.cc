@@ -21,6 +21,7 @@ const pixels PLAYER_HEIGHT_PIXELS = PLAYER_HEIGHT * METERS_TO_PIXELS;
 void put_pixel(pixel_buffer_t* pixel_buffer, uint x, uint y, color_t color) {
   x %= pixel_buffer->width;
   y %= pixel_buffer->height;
+  y = SCREEN_HEIGHT_PIXELS - y;
   uint offset = pixel_buffer->width * y + x;
   pixel_buffer->data[offset] = color;
 }
@@ -77,17 +78,17 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
   if (controller.left_pressed) {
     dx -= PLAYER_SPEED_METERS_PER_SECOND * dt;
   }
-  if (controller.down_pressed) {
+  if (controller.up_pressed) {
     dy += PLAYER_SPEED_METERS_PER_SECOND * dt;
   }
-  if (controller.up_pressed) {
+  if (controller.down_pressed) {
     dy -= PLAYER_SPEED_METERS_PER_SECOND * dt;
   }
   game_state.player_location = translate(game_state.player_location, dx, dy);
 
   // Render Player
-  location_t player_top_left = translate(game_state.player_location, -PLAYER_WIDTH/2, -PLAYER_HEIGHT/2);
-  screen_location_t screen_location = get_screen_location(player_top_left);
+  location_t player_bottom_left = translate(game_state.player_location, -PLAYER_WIDTH/2, -PLAYER_HEIGHT/2);
+  screen_location_t screen_location = get_screen_location(player_bottom_left);
   draw_box(
     pixel_buffer,
     screen_location.x,
