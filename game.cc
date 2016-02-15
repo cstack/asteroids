@@ -37,6 +37,27 @@ void draw_box(pixel_buffer_t* pixel_buffer, double x, double y, double width, do
   }
 }
 
+void draw_line(screen_location_t p1, screen_location_t p2, color_t color, pixel_buffer_t* pixel_buffer) {
+  // https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
+
+  // Only works for lines in the first octant
+  // Does not handle line going off screen
+  double dx = p2.x - p1.x;
+  double dy = p2.y - p1.y;
+  double error = 0;
+  double deltaerr = abs(dy / dx);
+  int y = p1.y;
+  for (int x = p1.x; x < p2.x; x++) {
+    put_pixel(pixel_buffer, x, y, color);
+    error += deltaerr;
+    while (error >= 0.5) {
+         put_pixel(pixel_buffer, x, y, color);
+         y += sign(p2.y - p1.y);
+         error -= 1.0;
+    }
+  }
+}
+
 void initialize_game_state(game_state_t &game_state) {
   game_state.player_location.x = SCREEN_WIDTH/2;
   game_state.player_location.y = SCREEN_HEIGHT/2;
@@ -96,5 +117,14 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
     PLAYER_WIDTH_PIXELS,
     PLAYER_HEIGHT_PIXELS,
     PLAYER_COLOR
+  );
+
+  screen_location_t p1 = get_screen_location(game_state.player_location);
+  screen_location_t p2 = get_screen_location(translate(game_state.player_location, 2, 3));
+  draw_line(
+    p1,
+    p2,
+    PLAYER_COLOR,
+    pixel_buffer
   );
 }

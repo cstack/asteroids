@@ -12,11 +12,13 @@ typedef double meters;
 typedef uint pixels;
 
 struct location_t {
+  // Location in space relative to origin (bottom left of screen)
   meters x;
   meters y;
 };
 
 struct screen_location_t {
+  // Index of pixel relative to top left of screen
   pixels x;
   pixels y;
 };

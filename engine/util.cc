@@ -2,6 +2,10 @@
 
 #include <iostream>
 
+double abs(double x) {
+  return x > 0 ? x : -x;
+}
+
 void assert(bool expression, const char* message) {
   if (!expression) {
     std::cout << message << std::endl;
@@ -17,6 +21,18 @@ double clip(double value, double min, double max) {
   return value;
 }
 
+int round(double value) {
+  return (int) (value + 0.5);
+}
+
+int sign(double value) {
+  if (value > 0)
+    return 1;
+  if (value < 0)
+    return -1;
+  return 0;
+}
+
 double wrap(double value, double min, double max) {
   double range = max - min;
   while (value < min) {
@@ -26,8 +42,4 @@ double wrap(double value, double min, double max) {
     value -= range;
   }
   return value;
-}
-
-int round(double value) {
-  return (int) (value + 0.5);
 }
