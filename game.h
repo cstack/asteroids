@@ -9,7 +9,7 @@ const uint SCREEN_WIDTH_PIXELS = 1024;
 const uint SCREEN_HEIGHT_PIXELS = 576;
 
 typedef double meters;
-typedef uint pixels;
+typedef int pixels;
 
 struct location_t {
   // Location in space relative to origin (bottom left of screen)

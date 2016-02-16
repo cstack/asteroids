@@ -191,11 +191,11 @@ void draw_line(screen_location_t p1, screen_location_t p2, color_t color, pixel_
   screen_location_t pixel_to_print;
   for (int x = p1.x; x < p2.x; x++) {
     pixel_to_print = switch_from_octant_zero_to(octant, x, y);
-    put_pixel(pixel_buffer, pixel_to_print.x, pixel_to_print.y, color);
+    put_pixel(pixel_buffer, wrap(pixel_to_print.x, 0, SCREEN_WIDTH_PIXELS), wrap(pixel_to_print.y, 0, SCREEN_HEIGHT_PIXELS), color);
     error += deltaerr;
     while (error >= 0.5) {
       pixel_to_print = switch_from_octant_zero_to(octant, x, y);
-      put_pixel(pixel_buffer, pixel_to_print.x, pixel_to_print.y, color);
+      put_pixel(pixel_buffer, wrap(pixel_to_print.x, 0, SCREEN_WIDTH_PIXELS), wrap(pixel_to_print.y, 0, SCREEN_HEIGHT_PIXELS), color);
       y += sign(p2.y - p1.y);
       error -= 1.0;
     }
@@ -288,19 +288,51 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
     pixel_buffer
   );
 
-  // p2 = get_screen_location(translate_without_wrapping(game_state.player_location, -2, 3));
-  // draw_line(
-  //   p1,
-  //   p2,
-  //   BLUE, // Octant 3
-  //   pixel_buffer
-  // );
+  p2 = get_screen_location(translate_without_wrapping(game_state.player_location, -2, 3));
+  draw_line(
+    p1,
+    p2,
+    BLUE, // Octant 2
+    pixel_buffer
+  );
 
-  // p2 = get_screen_location(translate_without_wrapping(game_state.player_location, -3, 2));
-  // draw_line(
-  //   p1,
-  //   p2,
-  //   YELLOW, // Octant 4
-  //   pixel_buffer
-  // );
+  p2 = get_screen_location(translate_without_wrapping(game_state.player_location, -3, 2));
+  draw_line(
+    p1,
+    p2,
+    YELLOW, // Octant 3
+    pixel_buffer
+  );
+
+    p2 = get_screen_location(translate_without_wrapping(game_state.player_location, -3, -2));
+  draw_line(
+    p1,
+    p2,
+    CYAN, // Octant 4
+    pixel_buffer
+  );
+
+    p2 = get_screen_location(translate_without_wrapping(game_state.player_location, -2, -3));
+  draw_line(
+    p1,
+    p2,
+    MAGENTA, // Octant 5
+    pixel_buffer
+  );
+
+    p2 = get_screen_location(translate_without_wrapping(game_state.player_location, 2, -3));
+  draw_line(
+    p1,
+    p2,
+    WHITE, // Octant 6
+    pixel_buffer
+  );
+
+    p2 = get_screen_location(translate_without_wrapping(game_state.player_location, 3, -2));
+  draw_line(
+    p1,
+    p2,
+    BLACK, // Octant 7
+    pixel_buffer
+  );
 }
