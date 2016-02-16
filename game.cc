@@ -18,6 +18,11 @@ const meters PLAYER_HEIGHT = 2;
 const pixels PLAYER_WIDTH_PIXELS = PLAYER_WIDTH * METERS_TO_PIXELS;
 const pixels PLAYER_HEIGHT_PIXELS = PLAYER_HEIGHT * METERS_TO_PIXELS;
 
+// Helpful for debugging
+std::ostream &operator<<(std::ostream &os, screen_location_t const &screen_location) {
+    return os << "(" << screen_location.x << ", " << screen_location.y << ")";
+}
+
 void put_pixel(pixel_buffer_t* pixel_buffer, uint x, uint y, color_t color) {
   x %= pixel_buffer->width;
   y %= pixel_buffer->height;
@@ -41,7 +46,6 @@ void draw_line(screen_location_t p1, screen_location_t p2, color_t color, pixel_
   // https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
 
   // Only works for lines in the first octant
-  // Does not handle line going off screen
   double dx = p2.x - p1.x;
   double dy = p2.y - p1.y;
   double error = 0;
@@ -79,6 +83,12 @@ screen_location_t get_screen_location(location_t location) {
 location_t translate(location_t location, meters dx, meters dy) {
   location.x = wrap(location.x + dx, 0, SCREEN_WIDTH);
   location.y = wrap(location.y + dy, 0, SCREEN_HEIGHT);
+  return location;
+}
+
+location_t translate_without_wrapping(location_t location, meters dx, meters dy) {
+  location.x = location.x + dx;
+  location.y = location.y + dy;
   return location;
 }
 
@@ -120,7 +130,7 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
   );
 
   screen_location_t p1 = get_screen_location(game_state.player_location);
-  screen_location_t p2 = get_screen_location(translate(game_state.player_location, 2, 3));
+  screen_location_t p2 = get_screen_location(translate_without_wrapping(game_state.player_location, 2, 3));
   draw_line(
     p1,
     p2,
