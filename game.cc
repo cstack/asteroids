@@ -42,8 +42,145 @@ void draw_box(pixel_buffer_t* pixel_buffer, double x, double y, double width, do
   }
 }
 
+uint get_octant(double x1, double x2, double y1, double y2) {
+   /*
+   Octants:
+   \2|1/
+   3\|/0
+  ---+---
+   4/|\7
+   /5|6\
+   */
+  double dx = x2 - x1;
+  double dy = y2 - y1;
+  double steepness = abs(dy/dx);
+  std::cout << "dx " << dx << ", dy " << dy << ", steepness " << steepness << std::endl;
+  if (dx > 0) {
+    if (dy > 0) {
+      if (steepness > 1) {
+        return 1;
+      } else {
+        return 0;
+      }
+    } else {
+      if (steepness > 1) {
+        return 6;
+      } else {
+        return 7;
+      }
+    }
+  } else {
+    if (dy > 0) {
+      if (steepness > 1) {
+        return 2;
+      } else {
+        return 3;
+      }
+    } else {
+      if (steepness > 1) {
+        return 5;
+      } else {
+        return 4;
+      }
+    }
+  }
+}
+
+screen_location_t switch_to_octant_zero_from(uint octant, double x, double y) {
+  screen_location_t result;
+  switch(octant) {
+  case 0:
+    result.x = x;
+    result.y = y;
+    break;
+  case 1:
+    result.x = y;
+    result.y = x;
+    break;
+  case 2:
+    result.x = y;
+    result.y = -x;
+    break;
+  case 3:
+    result.x = -x;
+    result.y = y;
+    break;
+  case 4:
+    result.x = -x;
+    result.y = -y;
+    break;
+  case 5:
+    result.x = -y;
+    result.y = -x;
+    break;
+  case 6:
+    result.x = -y;
+    result.y = x;
+    break;
+  case 7:
+    result.x = x;
+    result.y = -y;
+    break;
+  default:
+    assert(false, "Unhandled octant");
+  }
+  return result;
+}
+
+screen_location_t switch_from_octant_zero_to(uint octant, double x, double y) {
+  screen_location_t result;
+  switch(octant) {
+  case 0:
+    result.x = x;
+    result.y = y;
+    break;
+  case 1:
+    result.x = y;
+    result.y = x;
+    break;
+  case 2:
+    result.x = -y;
+    result.y = x;
+    break;
+  case 3:
+    result.x = -x;
+    result.y = y;
+    break;
+  case 4:
+    result.x = -x;
+    result.y = -y;
+    break;
+  case 5:
+    result.x = -y;
+    result.y = -x;
+    break;
+  case 6:
+    result.x = y;
+    result.y = -x;
+    break;
+  case 7:
+    result.x = x;
+    result.y = -y;
+    break;
+  default:
+    assert(false, "Unhandled octant");
+  }
+  return result;
+}
+
 void draw_line(screen_location_t p1, screen_location_t p2, color_t color, pixel_buffer_t* pixel_buffer) {
   // https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
+
+  std::cout << "draw_line(p1 " << p1 << ", p2 " << p2 << ", color_t color, pixel_buffer_t* pixel_buffer)" << std::endl;
+
+  uint octant = get_octant(p1.x, p2.x, p1.y, p2.y);
+  std::cout << "octant " << octant << std::endl;
+
+  p1 = switch_to_octant_zero_from(octant, p1.x, p1.y);
+  p2 = switch_to_octant_zero_from(octant, p2.x, p2.y);
+
+  std::cout << "p1: " << p1 << std::endl;
+  std::cout << "p2: " << p2 << std::endl;
 
   // Only works for lines in the first octant
   double dx = p2.x - p1.x;
@@ -51,15 +188,20 @@ void draw_line(screen_location_t p1, screen_location_t p2, color_t color, pixel_
   double error = 0;
   double deltaerr = abs(dy / dx);
   int y = p1.y;
+  screen_location_t pixel_to_print;
   for (int x = p1.x; x < p2.x; x++) {
-    put_pixel(pixel_buffer, x, y, color);
+    pixel_to_print = switch_from_octant_zero_to(octant, x, y);
+    put_pixel(pixel_buffer, pixel_to_print.x, pixel_to_print.y, color);
     error += deltaerr;
     while (error >= 0.5) {
-         put_pixel(pixel_buffer, x, y, color);
-         y += sign(p2.y - p1.y);
-         error -= 1.0;
+      pixel_to_print = switch_from_octant_zero_to(octant, x, y);
+      put_pixel(pixel_buffer, pixel_to_print.x, pixel_to_print.y, color);
+      y += sign(p2.y - p1.y);
+      error -= 1.0;
     }
   }
+
+  // assert(false, "Stopping after drawing one line");
 }
 
 void initialize_game_state(game_state_t &game_state) {
@@ -130,11 +272,35 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
   );
 
   screen_location_t p1 = get_screen_location(game_state.player_location);
-  screen_location_t p2 = get_screen_location(translate_without_wrapping(game_state.player_location, 2, 3));
+  screen_location_t p2 = get_screen_location(translate_without_wrapping(game_state.player_location, 3, 2));
   draw_line(
     p1,
     p2,
-    PLAYER_COLOR,
+    RED, // Octant 0
     pixel_buffer
   );
+
+  p2 = get_screen_location(translate_without_wrapping(game_state.player_location, 2, 3));
+  draw_line(
+    p1,
+    p2,
+    GREEN, // Octant 1
+    pixel_buffer
+  );
+
+  // p2 = get_screen_location(translate_without_wrapping(game_state.player_location, -2, 3));
+  // draw_line(
+  //   p1,
+  //   p2,
+  //   BLUE, // Octant 3
+  //   pixel_buffer
+  // );
+
+  // p2 = get_screen_location(translate_without_wrapping(game_state.player_location, -3, 2));
+  // draw_line(
+  //   p1,
+  //   p2,
+  //   YELLOW, // Octant 4
+  //   pixel_buffer
+  // );
 }
