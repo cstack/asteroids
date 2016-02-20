@@ -15,6 +15,10 @@ std::ostream &operator<<(std::ostream &os, screen_point_t const &screen_location
   return os << "(" << screen_location.x << ", " << screen_location.y << ")";
 }
 
+void clear_screen(pixel_buffer_t* pixel_buffer) {
+  draw_box(pixel_buffer, 0, 0, pixel_buffer->width, pixel_buffer->height, BLACK);
+}
+
 color_t rgb(double red, double green, double blue) {
   color_t red_component = ((int)round(red)) << 16;
   color_t green_component = ((int)round(green)) << 8;

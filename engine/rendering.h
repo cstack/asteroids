@@ -23,5 +23,6 @@ const color_t WHITE = 0x00FFFFFF;
 color_t rgb(double red, double green, double blue);
 void draw_box(pixel_buffer_t* pixel_buffer, double x, double y, double width, double height, color_t color);
 void draw_polygon(pixel_buffer_t* pixel_buffer, point_t location, polygon_t polygon, color_t color);
+void clear_screen(pixel_buffer_t* pixel_buffer);
 
 #endif

@@ -27,10 +27,6 @@ void initialize_game_state(game_state_t &game_state) {
   game_state.initialized = true;
 }
 
-void clear_screen(pixel_buffer_t* pixel_buffer) {
-  draw_box(pixel_buffer, 0, 0, pixel_buffer->width, pixel_buffer->height, BLACK);
-}
-
 void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
   if (!game_state.initialized) {
     initialize_game_state(game_state);
