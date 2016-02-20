@@ -14,25 +14,25 @@ std::ostream &operator<<(std::ostream &os, polygon_t const &polygon) {
   return os;
 }
 
-point_t translate(point_t location, meters dx, meters dy) {
+point_t translate_and_wrap(point_t location, meters dx, meters dy) {
   location.x = wrap(location.x + dx, 0, SCREEN_WIDTH);
   location.y = wrap(location.y + dy, 0, SCREEN_HEIGHT);
   return location;
 }
 
-point_t translate(point_t location, point_t delta) {
+point_t translate_and_wrap(point_t location, point_t delta) {
   location.x = wrap(location.x + delta.x, 0, SCREEN_WIDTH);
   location.y = wrap(location.y + delta.y, 0, SCREEN_HEIGHT);
   return location;
 }
 
-point_t translate_without_wrapping(point_t location, meters dx, meters dy) {
+point_t translate(point_t location, meters dx, meters dy) {
   location.x = location.x + dx;
   location.y = location.y + dy;
   return location;
 }
 
-point_t translate_without_wrapping(point_t location, point_t delta) {
+point_t translate(point_t location, point_t delta) {
   location.x = location.x + delta.x;
   location.y = location.y + delta.y;
   return location;
@@ -65,4 +65,18 @@ point_t vector(meters magnitude, rotations direction) {
   result.x = magnitude * cos(radians(direction));
   result.y = magnitude * sin(radians(direction));
   return result;
+}
+
+double magnitude(point_t point) {
+  return sqrt(pow(point.x, 2) + pow(point.y, 2));
+}
+
+point_t clip(point_t point, meters max_magnitude) {
+  double m = magnitude(point);
+  if (m > max_magnitude) {
+    double scale = max_magnitude / m;
+    point.x *= scale;
+    point.y *= scale;
+  }
+  return point;
 }

@@ -206,11 +206,11 @@ screen_point_t get_screen_location(point_t location) {
 
 void draw_polygon(pixel_buffer_t* pixel_buffer, point_t location, polygon_t polygon, color_t color) {
   for (int i = 1; i < polygon.num_points; i++) {
-    screen_point_t p1 = get_screen_location(translate_without_wrapping(location, polygon.points[i-1]));
-    screen_point_t p2 = get_screen_location(translate_without_wrapping(location, polygon.points[i]));
+    screen_point_t p1 = get_screen_location(translate(location, polygon.points[i-1]));
+    screen_point_t p2 = get_screen_location(translate(location, polygon.points[i]));
     draw_line(p1, p2, color, pixel_buffer);
   }
-  screen_point_t p1 = get_screen_location(translate_without_wrapping(location, polygon.points[polygon.num_points-1]));
-  screen_point_t p2 = get_screen_location(translate_without_wrapping(location, polygon.points[0]));
+  screen_point_t p1 = get_screen_location(translate(location, polygon.points[polygon.num_points-1]));
+  screen_point_t p2 = get_screen_location(translate(location, polygon.points[0]));
   draw_line(p1, p2, color, pixel_buffer);
 }
