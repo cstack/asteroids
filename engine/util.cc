@@ -21,10 +21,6 @@ double clip(double value, double min, double max) {
   return value;
 }
 
-int round(double value) {
-  return (int) (value + 0.5);
-}
-
 int sign(double value) {
   if (value > 0)
     return 1;

@@ -10,6 +10,7 @@ struct player_t
 {
   point_t location;
   polygon_t shape;
+  rotations direction;
 };
 
 struct game_state_t {

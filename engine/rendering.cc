@@ -1,5 +1,6 @@
 #include "rendering.h"
 #include "util.h"
+#include "math.h"
 
 const double METERS_TO_PIXELS = SCREEN_WIDTH_PIXELS / SCREEN_WIDTH; // Multiply by this to convert meters to pixels
 const double PIXELS_TO_METERS = 1/METERS_TO_PIXELS;
@@ -15,9 +16,9 @@ std::ostream &operator<<(std::ostream &os, screen_point_t const &screen_location
 }
 
 color_t rgb(double red, double green, double blue) {
-  color_t red_component = round(red) << 16;
-  color_t green_component = round(green) << 8;
-  color_t blue_component = round(blue);
+  color_t red_component = ((int)round(red)) << 16;
+  color_t green_component = ((int)round(green)) << 8;
+  color_t blue_component = ((int)round(blue));
   return red_component | green_component | blue_component;
 }
 

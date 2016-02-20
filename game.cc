@@ -22,6 +22,8 @@ void initialize_game_state(game_state_t &game_state) {
   game_state.player.shape.points[2].x = -1;
   game_state.player.shape.points[2].y = 1;
 
+  game_state.player.direction = UP;
+
   game_state.initialized = true;
 }
 
@@ -56,7 +58,7 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
   draw_polygon(
     pixel_buffer,
     game_state.player.location,
-    game_state.player.shape,
+    rotate(game_state.player.shape, game_state.player.direction),
     PLAYER_COLOR
   );
 }
