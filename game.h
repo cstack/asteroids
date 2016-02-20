@@ -11,6 +11,7 @@ struct player_t
   point_t location;
   polygon_t shape;
   rotations direction;
+  point_t velocity;
 };
 
 struct game_state_t {

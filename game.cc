@@ -6,7 +6,9 @@
 
 game_state_t game_state;
 
-const meters PLAYER_SPEED_METERS_PER_SECOND = 8;
+const meters PLAYER_MAX_SPEED_METERS_PER_SECOND = 8;
+const rotations PLAYER_ROTATIONS_PER_SECOND = 1;
+const double PLAYER_ACCELERATION = 1;
 const color_t PLAYER_COLOR = rgb(200, 200, 255);
 
 void initialize_game_state(game_state_t &game_state) {
@@ -34,21 +36,32 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
 
   clear_screen(pixel_buffer);
 
-  // Move player
-  meters dx = 0, dy = 0;
+  // Rotate player
+  double delta_direction;
   if (controller.right_pressed) {
-    dx += PLAYER_SPEED_METERS_PER_SECOND * dt;
+    delta_direction -= PLAYER_ROTATIONS_PER_SECOND * dt;
   }
   if (controller.left_pressed) {
-    dx -= PLAYER_SPEED_METERS_PER_SECOND * dt;
+    delta_direction += PLAYER_ROTATIONS_PER_SECOND * dt;
   }
+
+  // Accelerate player
+  game_state.player.direction = wrap(game_state.player.direction + delta_direction, 0, 1);
   if (controller.up_pressed) {
-    dy += PLAYER_SPEED_METERS_PER_SECOND * dt;
+    game_state.player.velocity = translate(
+      game_state.player.velocity,
+      vector(
+        PLAYER_ACCELERATION * dt,
+        game_state.player.direction
+      )
+    );
   }
-  if (controller.down_pressed) {
-    dy -= PLAYER_SPEED_METERS_PER_SECOND * dt;
-  }
-  game_state.player.location = translate(game_state.player.location, dx, dy);
+
+  // Move player
+  game_state.player.location = translate(
+    game_state.player.location,
+    game_state.player.velocity
+  );
 
   // Render Player
   draw_polygon(

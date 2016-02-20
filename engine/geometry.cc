@@ -59,3 +59,10 @@ polygon_t rotate(polygon_t polygon, rotations angle) {
   }
   return polygon;
 }
+
+point_t vector(meters magnitude, rotations direction) {
+  point_t result;
+  result.x = magnitude * cos(radians(direction));
+  result.y = magnitude * sin(radians(direction));
+  return result;
+}

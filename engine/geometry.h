@@ -33,5 +33,6 @@ point_t translate_without_wrapping(point_t location, point_t delta);
 polygon_t rotate(polygon_t polygon, rotations angle);
 std::ostream &operator<<(std::ostream &os, point_t const &location);
 std::ostream &operator<<(std::ostream &os, polygon_t const &polygon);
+point_t vector(meters magnitude, rotations direction);
 
 #endif
