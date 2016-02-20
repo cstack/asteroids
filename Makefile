@@ -17,8 +17,11 @@ all: game.pexe
 clean:
 	rm *.pexe *.bc *.o
 
-color.o: engine/color.cc
-	$(CXX) -c -o color.o -pthread engine/color.cc
+geometry.o: engine/geometry.cc
+	$(CXX) -c -o geometry.o -pthread engine/geometry.cc
+
+rendering.o: engine/rendering.cc
+	$(CXX) -c -o rendering.o -pthread engine/rendering.cc
 
 util.o: engine/util.cc
 	$(CXX) -c -o util.o -pthread engine/util.cc
@@ -29,8 +32,8 @@ game.o: game.cc
 nacl.o: platform/nacl.cc
 	$(CXX) -c -o nacl.o -pthread -I $(PPAPI_INCLUDE) platform/nacl.cc
 
-minimal_unstripped.bc: game.o nacl.o color.o util.o
-	$(LINK) -o minimal_unstripped.bc -pthread -L "$(PPAPI_LIBDIR)" game.o nacl.o color.o util.o $(LIBS)
+minimal_unstripped.bc: game.o nacl.o geometry.o rendering.o util.o
+	$(LINK) -o minimal_unstripped.bc -pthread -L "$(PPAPI_LIBDIR)" game.o nacl.o geometry.o rendering.o util.o $(LIBS)
 
 game.pexe: minimal_unstripped.bc
 	$(FINALIZE) -o game.pexe minimal_unstripped.bc
