@@ -4,6 +4,12 @@
 const double METERS_TO_PIXELS = SCREEN_WIDTH_PIXELS / SCREEN_WIDTH; // Multiply by this to convert meters to pixels
 const double PIXELS_TO_METERS = 1/METERS_TO_PIXELS;
 
+struct screen_point_t {
+  // Index of pixel relative to top left of screen
+  pixels x;
+  pixels y;
+};
+
 std::ostream &operator<<(std::ostream &os, screen_point_t const &screen_location) {
   return os << "(" << screen_location.x << ", " << screen_location.y << ")";
 }
