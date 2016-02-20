@@ -11,23 +11,36 @@ const uint SCREEN_HEIGHT_PIXELS = 576;
 typedef double meters;
 typedef int pixels;
 
-struct location_t {
+struct point_t {
   // Location in space relative to origin (bottom left of screen)
   meters x;
   meters y;
 };
 
-struct screen_location_t {
+struct screen_point_t {
   // Index of pixel relative to top left of screen
   pixels x;
   pixels y;
+};
+
+const ushort MAX_POINTS_IN_POLYGON = 5;
+struct polygon_t
+{
+  ushort num_points;
+  point_t points[MAX_POINTS_IN_POLYGON];
+};
+
+struct player_t
+{
+  point_t location;
+  polygon_t shape;
 };
 
 struct game_state_t {
   game_state_t() : initialized(false) {}
   bool initialized;
 
-  location_t player_location;
+  player_t player;
 };
 
 #endif

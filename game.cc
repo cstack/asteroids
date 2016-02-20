@@ -19,8 +19,18 @@ const pixels PLAYER_WIDTH_PIXELS = PLAYER_WIDTH * METERS_TO_PIXELS;
 const pixels PLAYER_HEIGHT_PIXELS = PLAYER_HEIGHT * METERS_TO_PIXELS;
 
 // Helpful for debugging
-std::ostream &operator<<(std::ostream &os, screen_location_t const &screen_location) {
-    return os << "(" << screen_location.x << ", " << screen_location.y << ")";
+std::ostream &operator<<(std::ostream &os, screen_point_t const &screen_location) {
+  return os << "(" << screen_location.x << ", " << screen_location.y << ")";
+}
+std::ostream &operator<<(std::ostream &os, point_t const &location) {
+  return os << "(" << location.x << ", " << location.y << ")";
+}
+std::ostream &operator<<(std::ostream &os, polygon_t const &polygon) {
+  os << "polygon(" << polygon.num_points << ")";
+  for (int i = 0; i < polygon.num_points; i++) {
+    os << " " << polygon.points[i];
+  }
+  return os;
 }
 
 void put_pixel(pixel_buffer_t* pixel_buffer, uint x, uint y, color_t color) {
@@ -29,6 +39,30 @@ void put_pixel(pixel_buffer_t* pixel_buffer, uint x, uint y, color_t color) {
   y = SCREEN_HEIGHT_PIXELS - y;
   uint offset = pixel_buffer->width * y + x;
   pixel_buffer->data[offset] = color;
+}
+
+point_t translate(point_t location, meters dx, meters dy) {
+  location.x = wrap(location.x + dx, 0, SCREEN_WIDTH);
+  location.y = wrap(location.y + dy, 0, SCREEN_HEIGHT);
+  return location;
+}
+
+point_t translate(point_t location, point_t delta) {
+  location.x = wrap(location.x + delta.x, 0, SCREEN_WIDTH);
+  location.y = wrap(location.y + delta.y, 0, SCREEN_HEIGHT);
+  return location;
+}
+
+point_t translate_without_wrapping(point_t location, meters dx, meters dy) {
+  location.x = location.x + dx;
+  location.y = location.y + dy;
+  return location;
+}
+
+point_t translate_without_wrapping(point_t location, point_t delta) {
+  location.x = location.x + delta.x;
+  location.y = location.y + delta.y;
+  return location;
 }
 
 void draw_box(pixel_buffer_t* pixel_buffer, double x, double y, double width, double height, color_t color) {
@@ -54,7 +88,6 @@ uint get_octant(double x1, double x2, double y1, double y2) {
   double dx = x2 - x1;
   double dy = y2 - y1;
   double steepness = abs(dy/dx);
-  std::cout << "dx " << dx << ", dy " << dy << ", steepness " << steepness << std::endl;
   if (dx > 0) {
     if (dy > 0) {
       if (steepness > 1) {
@@ -86,8 +119,8 @@ uint get_octant(double x1, double x2, double y1, double y2) {
   }
 }
 
-screen_location_t switch_to_octant_zero_from(uint octant, double x, double y) {
-  screen_location_t result;
+screen_point_t switch_to_octant_zero_from(uint octant, double x, double y) {
+  screen_point_t result;
   switch(octant) {
   case 0:
     result.x = x;
@@ -127,8 +160,8 @@ screen_location_t switch_to_octant_zero_from(uint octant, double x, double y) {
   return result;
 }
 
-screen_location_t switch_from_octant_zero_to(uint octant, double x, double y) {
-  screen_location_t result;
+screen_point_t switch_from_octant_zero_to(uint octant, double x, double y) {
+  screen_point_t result;
   switch(octant) {
   case 0:
     result.x = x;
@@ -168,19 +201,13 @@ screen_location_t switch_from_octant_zero_to(uint octant, double x, double y) {
   return result;
 }
 
-void draw_line(screen_location_t p1, screen_location_t p2, color_t color, pixel_buffer_t* pixel_buffer) {
+void draw_line(screen_point_t p1, screen_point_t p2, color_t color, pixel_buffer_t* pixel_buffer) {
   // https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
 
-  std::cout << "draw_line(p1 " << p1 << ", p2 " << p2 << ", color_t color, pixel_buffer_t* pixel_buffer)" << std::endl;
-
   uint octant = get_octant(p1.x, p2.x, p1.y, p2.y);
-  std::cout << "octant " << octant << std::endl;
 
   p1 = switch_to_octant_zero_from(octant, p1.x, p1.y);
   p2 = switch_to_octant_zero_from(octant, p2.x, p2.y);
-
-  std::cout << "p1: " << p1 << std::endl;
-  std::cout << "p2: " << p2 << std::endl;
 
   // Only works for lines in the first octant
   double dx = p2.x - p1.x;
@@ -188,7 +215,7 @@ void draw_line(screen_location_t p1, screen_location_t p2, color_t color, pixel_
   double error = 0;
   double deltaerr = abs(dy / dx);
   int y = p1.y;
-  screen_location_t pixel_to_print;
+  screen_point_t pixel_to_print;
   for (int x = p1.x; x < p2.x; x++) {
     pixel_to_print = switch_from_octant_zero_to(octant, x, y);
     put_pixel(pixel_buffer, wrap(pixel_to_print.x, 0, SCREEN_WIDTH_PIXELS), wrap(pixel_to_print.y, 0, SCREEN_HEIGHT_PIXELS), color);
@@ -200,13 +227,38 @@ void draw_line(screen_location_t p1, screen_location_t p2, color_t color, pixel_
       error -= 1.0;
     }
   }
+}
 
-  // assert(false, "Stopping after drawing one line");
+screen_point_t get_screen_location(point_t location) {
+  screen_point_t screen_location;
+  screen_location.x = location.x * METERS_TO_PIXELS;
+  screen_location.y = location.y * METERS_TO_PIXELS;
+  return screen_location;
+}
+
+void draw_polygon(pixel_buffer_t* pixel_buffer, point_t location, polygon_t polygon, color_t color) {
+  for (int i = 1; i < polygon.num_points; i++) {
+    screen_point_t p1 = get_screen_location(translate_without_wrapping(location, polygon.points[i-1]));
+    screen_point_t p2 = get_screen_location(translate_without_wrapping(location, polygon.points[i]));
+    draw_line(p1, p2, color, pixel_buffer);
+  }
+  screen_point_t p1 = get_screen_location(translate_without_wrapping(location, polygon.points[polygon.num_points-1]));
+  screen_point_t p2 = get_screen_location(translate_without_wrapping(location, polygon.points[0]));
+  draw_line(p1, p2, color, pixel_buffer);
 }
 
 void initialize_game_state(game_state_t &game_state) {
-  game_state.player_location.x = SCREEN_WIDTH/2;
-  game_state.player_location.y = SCREEN_HEIGHT/2;
+  game_state.player.location.x = SCREEN_WIDTH/2;
+  game_state.player.location.y = SCREEN_HEIGHT/2;
+
+  // Triangle
+  game_state.player.shape.num_points = 3;
+  game_state.player.shape.points[0].x = 1;
+  game_state.player.shape.points[0].y = 0;
+  game_state.player.shape.points[1].x = -1;
+  game_state.player.shape.points[1].y = -1;
+  game_state.player.shape.points[2].x = -1;
+  game_state.player.shape.points[2].y = 1;
 
   game_state.initialized = true;
 }
@@ -215,31 +267,10 @@ void clear_screen(pixel_buffer_t* pixel_buffer) {
   draw_box(pixel_buffer, 0, 0, pixel_buffer->width, pixel_buffer->height, BLACK);
 }
 
-screen_location_t get_screen_location(location_t location) {
-  screen_location_t screen_location;
-  screen_location.x = location.x * METERS_TO_PIXELS;
-  screen_location.y = location.y * METERS_TO_PIXELS;
-  return screen_location;
-}
-
-location_t translate(location_t location, meters dx, meters dy) {
-  location.x = wrap(location.x + dx, 0, SCREEN_WIDTH);
-  location.y = wrap(location.y + dy, 0, SCREEN_HEIGHT);
-  return location;
-}
-
-location_t translate_without_wrapping(location_t location, meters dx, meters dy) {
-  location.x = location.x + dx;
-  location.y = location.y + dy;
-  return location;
-}
-
 void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
   if (!game_state.initialized) {
     initialize_game_state(game_state);
   }
-
-  location_t player_location = game_state.player_location;
 
   clear_screen(pixel_buffer);
 
@@ -257,82 +288,13 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
   if (controller.down_pressed) {
     dy -= PLAYER_SPEED_METERS_PER_SECOND * dt;
   }
-  game_state.player_location = translate(game_state.player_location, dx, dy);
+  game_state.player.location = translate(game_state.player.location, dx, dy);
 
   // Render Player
-  location_t player_bottom_left = translate(game_state.player_location, -PLAYER_WIDTH/2, -PLAYER_HEIGHT/2);
-  screen_location_t screen_location = get_screen_location(player_bottom_left);
-  draw_box(
+  draw_polygon(
     pixel_buffer,
-    screen_location.x,
-    screen_location.y,
-    PLAYER_WIDTH_PIXELS,
-    PLAYER_HEIGHT_PIXELS,
+    game_state.player.location,
+    game_state.player.shape,
     PLAYER_COLOR
-  );
-
-  screen_location_t p1 = get_screen_location(game_state.player_location);
-  screen_location_t p2 = get_screen_location(translate_without_wrapping(game_state.player_location, 3, 2));
-  draw_line(
-    p1,
-    p2,
-    RED, // Octant 0
-    pixel_buffer
-  );
-
-  p2 = get_screen_location(translate_without_wrapping(game_state.player_location, 2, 3));
-  draw_line(
-    p1,
-    p2,
-    GREEN, // Octant 1
-    pixel_buffer
-  );
-
-  p2 = get_screen_location(translate_without_wrapping(game_state.player_location, -2, 3));
-  draw_line(
-    p1,
-    p2,
-    BLUE, // Octant 2
-    pixel_buffer
-  );
-
-  p2 = get_screen_location(translate_without_wrapping(game_state.player_location, -3, 2));
-  draw_line(
-    p1,
-    p2,
-    YELLOW, // Octant 3
-    pixel_buffer
-  );
-
-    p2 = get_screen_location(translate_without_wrapping(game_state.player_location, -3, -2));
-  draw_line(
-    p1,
-    p2,
-    CYAN, // Octant 4
-    pixel_buffer
-  );
-
-    p2 = get_screen_location(translate_without_wrapping(game_state.player_location, -2, -3));
-  draw_line(
-    p1,
-    p2,
-    MAGENTA, // Octant 5
-    pixel_buffer
-  );
-
-    p2 = get_screen_location(translate_without_wrapping(game_state.player_location, 2, -3));
-  draw_line(
-    p1,
-    p2,
-    WHITE, // Octant 6
-    pixel_buffer
-  );
-
-    p2 = get_screen_location(translate_without_wrapping(game_state.player_location, 3, -2));
-  draw_line(
-    p1,
-    p2,
-    BLACK, // Octant 7
-    pixel_buffer
   );
 }
