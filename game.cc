@@ -11,6 +11,10 @@ const rotations PLAYER_ROTATIONS_PER_SECOND = 1;
 const double PLAYER_ACCELERATION = 0.5;
 const color_t PLAYER_COLOR = rgb(200, 200, 255);
 
+const meters LASER_LENGTH = 1;
+const color_t LASER_COLOR = rgb(255, 100, 100);
+const meters LASER_SPEED = 1;
+
 void initialize_game_state(game_state_t &game_state) {
   game_state.player.location.x = SCREEN_WIDTH/2;
   game_state.player.location.y = SCREEN_HEIGHT/2;
@@ -62,6 +66,33 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
       PLAYER_MAX_SPEED_METERS_PER_SECOND
     );
     game_state.player.velocity = clipped_v;
+  }
+
+  // Fire Laser
+  if (controller.jump_pressed && game_state.can_fire) {
+    std::cout << "Fire!" << std::endl;
+    game_state.can_fire = false;
+    laser_t& laser = game_state.lasers[game_state.laser_index];
+    laser.active = true;
+    laser.location = game_state.player.location;
+    laser.direction = game_state.player.direction;
+    game_state.laser_index = (game_state.laser_index + 1) % NUM_LASERS;
+  } else if (!controller.jump_pressed) {
+    game_state.can_fire = true;
+  }
+
+  // Move and render lasers
+  for (int i = 0; i < NUM_LASERS; i++) {
+    laser_t& laser = game_state.lasers[i];
+    if (laser.active) {
+      laser.location = translate(laser.location, vector(LASER_SPEED, laser.direction));
+      draw_line(
+        pixel_buffer,
+        laser.location,
+        translate(laser.location, vector(LASER_LENGTH, laser.direction)),
+        LASER_COLOR
+      );
+    }
   }
 
   // Move player

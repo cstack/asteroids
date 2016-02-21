@@ -170,33 +170,6 @@ screen_point_t switch_from_octant_zero_to(uint octant, double x, double y) {
   return result;
 }
 
-void draw_line(screen_point_t p1, screen_point_t p2, color_t color, pixel_buffer_t* pixel_buffer) {
-  // https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
-  uint octant = get_octant(p1.x, p2.x, p1.y, p2.y);
-
-  p1 = switch_to_octant_zero_from(octant, p1.x, p1.y);
-  p2 = switch_to_octant_zero_from(octant, p2.x, p2.y);
-
-  // Only works for lines in the first octant
-  double dx = p2.x - p1.x;
-  double dy = p2.y - p1.y;
-  double error = 0;
-  double deltaerr = abs(dy / dx);
-  int y = p1.y;
-  screen_point_t pixel_to_print;
-  for (int x = p1.x; x < p2.x; x++) {
-    pixel_to_print = switch_from_octant_zero_to(octant, x, y);
-    put_pixel(pixel_buffer, wrap(pixel_to_print.x, 0, SCREEN_WIDTH_PIXELS), wrap(pixel_to_print.y, 0, SCREEN_HEIGHT_PIXELS), color);
-    error += deltaerr;
-    while (error >= 0.5) {
-      pixel_to_print = switch_from_octant_zero_to(octant, x, y);
-      put_pixel(pixel_buffer, wrap(pixel_to_print.x, 0, SCREEN_WIDTH_PIXELS), wrap(pixel_to_print.y, 0, SCREEN_HEIGHT_PIXELS), color);
-      y += sign(p2.y - p1.y);
-      error -= 1.0;
-    }
-  }
-}
-
 screen_point_t get_screen_location(point_t location) {
   screen_point_t screen_location;
   screen_location.x = location.x * METERS_TO_PIXELS;
@@ -204,13 +177,43 @@ screen_point_t get_screen_location(point_t location) {
   return screen_location;
 }
 
+void draw_line(pixel_buffer_t* pixel_buffer, point_t p1, point_t p2, color_t color) {
+  // https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
+  uint octant = get_octant(p1.x, p2.x, p1.y, p2.y);
+
+  screen_point_t pixel1 = get_screen_location(p1);
+  screen_point_t pixel2 = get_screen_location(p2);
+
+  pixel1 = switch_to_octant_zero_from(octant, pixel1.x, pixel1.y);
+  pixel2 = switch_to_octant_zero_from(octant, pixel2.x, pixel2.y);
+
+  // Only works for lines in the first octant
+  double dx = pixel2.x - pixel1.x;
+  double dy = pixel2.y - pixel1.y;
+  double error = 0;
+  double deltaerr = abs(dy / dx);
+  int y = pixel1.y;
+  screen_point_t pixel_to_print;
+  for (int x = pixel1.x; x < pixel2.x; x++) {
+    pixel_to_print = switch_from_octant_zero_to(octant, x, y);
+    put_pixel(pixel_buffer, wrap(pixel_to_print.x, 0, SCREEN_WIDTH_PIXELS), wrap(pixel_to_print.y, 0, SCREEN_HEIGHT_PIXELS), color);
+    error += deltaerr;
+    while (error >= 0.5) {
+      pixel_to_print = switch_from_octant_zero_to(octant, x, y);
+      put_pixel(pixel_buffer, wrap(pixel_to_print.x, 0, SCREEN_WIDTH_PIXELS), wrap(pixel_to_print.y, 0, SCREEN_HEIGHT_PIXELS), color);
+      y += sign(pixel2.y - pixel1.y);
+      error -= 1.0;
+    }
+  }
+}
+
 void draw_polygon(pixel_buffer_t* pixel_buffer, point_t location, polygon_t polygon, color_t color) {
   for (int i = 1; i < polygon.num_points; i++) {
-    screen_point_t p1 = get_screen_location(translate(location, polygon.points[i-1]));
-    screen_point_t p2 = get_screen_location(translate(location, polygon.points[i]));
-    draw_line(p1, p2, color, pixel_buffer);
+    point_t p1 = translate(location, polygon.points[i-1]);
+    point_t p2 = translate(location, polygon.points[i]);
+    draw_line(pixel_buffer, p1, p2, color);
   }
-  screen_point_t p1 = get_screen_location(translate(location, polygon.points[polygon.num_points-1]));
-  screen_point_t p2 = get_screen_location(translate(location, polygon.points[0]));
-  draw_line(p1, p2, color, pixel_buffer);
+  point_t p1 = translate(location, polygon.points[polygon.num_points-1]);
+  point_t p2 = translate(location, polygon.points[0]);
+  draw_line(pixel_buffer, p1, p2, color);
 }
