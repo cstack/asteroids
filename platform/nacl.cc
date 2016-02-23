@@ -59,7 +59,7 @@ int game_main(int argc, char* argv[]) {
   pixel_buffer_t* pixel_buffer = new pixel_buffer_t;
   controller_t controller = {false, false, false, false, false};
 
-  double timeLastStep;
+  double timeLastStep = 0;
   double timeThisStep;
   double dt;
   while (1) {

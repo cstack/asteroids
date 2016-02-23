@@ -6,16 +6,29 @@
 
 game_state_t game_state;
 
-const meters PLAYER_MAX_SPEED_METERS_PER_SECOND = 0.5;
+const meters PLAYER_MAX_SPEED_METERS_PER_SECOND = 0.4;
 const rotations PLAYER_ROTATIONS_PER_SECOND = 1;
 const double PLAYER_ACCELERATION = 0.5;
 const color_t PLAYER_COLOR = rgb(200, 200, 255);
 
 const meters LASER_LENGTH = 1;
 const color_t LASER_COLOR = rgb(255, 100, 100);
-const meters LASER_SPEED = 1;
+const meters LASER_SPEED = 20;
+
+const seconds TIME_PER_ASTEROID_SPAWN = 2;
+const meters ASTEROID_SPEED = 0.6;
+const color_t ASTEROID_COLOR = rgb(200, 100, 200);
+
+std::ostream &operator<<(std::ostream &os, asteroid_t const &asteroid) {
+  return os << "asteroid " <<
+    (asteroid.active ? "active" : "inactive") <<
+    " " << asteroid.location <<
+    " " << asteroid.shape;
+}
 
 void initialize_game_state(game_state_t &game_state) {
+  srand (time(nullptr));
+
   game_state.player.location.x = SCREEN_WIDTH/2;
   game_state.player.location.y = SCREEN_HEIGHT/2;
 
@@ -52,7 +65,6 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
 
   // Accelerate player
   if (controller.up_pressed) {
-    std::cout << "up pressed" << std::endl;
     point_t delta_v = vector(
       PLAYER_ACCELERATION * dt,
       game_state.player.direction
@@ -70,7 +82,6 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
 
   // Fire Laser
   if (controller.jump_pressed && game_state.can_fire) {
-    std::cout << "Fire!" << std::endl;
     game_state.can_fire = false;
     laser_t& laser = game_state.lasers[game_state.laser_index];
     laser.active = true;
@@ -81,16 +92,47 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
     game_state.can_fire = true;
   }
 
+  // Spawn asteroids
+  game_state.time_since_last_spawn += dt;
+  if (game_state.time_since_last_spawn >= TIME_PER_ASTEROID_SPAWN) {
+    game_state.time_since_last_spawn -= TIME_PER_ASTEROID_SPAWN;
+    asteroid_t& asteroid = game_state.asteroids[game_state.asteroid_index];
+    game_state.asteroid_index = (game_state.asteroid_index+1) % NUM_ASTEROIDS;
+    asteroid.active = true;
+    asteroid.location = translate(game_state.player.location, SCREEN_WIDTH*rand(-0.5, 0.5), SCREEN_HEIGHT*rand(-0.5, 0.5));
+    asteroid.direction = rand(0,1);
+    asteroid.shape.num_points = 5;
+    asteroid.shape.points[0] = vector(rand(0.2, 1), 0);
+    asteroid.shape.points[1] = vector(rand(0.2, 1), 0.2);
+    asteroid.shape.points[2] = vector(rand(0.2, 1), 0.3);
+    asteroid.shape.points[3] = vector(rand(0.2, 1), 0.6);
+    asteroid.shape.points[4] = vector(rand(0.2, 1), 0.9);
+  }
+
   // Move and render lasers
   for (int i = 0; i < NUM_LASERS; i++) {
     laser_t& laser = game_state.lasers[i];
     if (laser.active) {
-      laser.location = translate(laser.location, vector(LASER_SPEED, laser.direction));
+      laser.location = translate(laser.location, vector(LASER_SPEED*dt, laser.direction));
       draw_line(
         pixel_buffer,
         laser.location,
         translate(laser.location, vector(LASER_LENGTH, laser.direction)),
         LASER_COLOR
+      );
+    }
+  }
+
+  // Move and render asteroids
+  for (int i = 0; i < NUM_ASTEROIDS; i++) {
+    asteroid_t& asteroid = game_state.asteroids[i];
+    if (asteroid.active) {
+      asteroid.location = translate(asteroid.location, vector(ASTEROID_SPEED*dt, asteroid.direction));
+      draw_polygon(
+        pixel_buffer,
+        asteroid.location,
+        rotate(asteroid.shape, asteroid.direction),
+        ASTEROID_COLOR
       );
     }
   }

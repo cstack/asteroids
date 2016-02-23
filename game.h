@@ -22,14 +22,30 @@ struct laser_t
   rotations direction;
 };
 
+#define NUM_ASTEROIDS 10
+struct asteroid_t
+{
+  bool active;
+  point_t location;
+  polygon_t shape;
+  rotations direction;
+};
+
+typedef double seconds;
+
 struct game_state_t {
   game_state_t() : initialized(false) {}
   bool initialized;
 
   player_t player;
+
   laser_t lasers[NUM_LASERS];
   bool can_fire;
   ushort laser_index;
+
+  asteroid_t asteroids[NUM_ASTEROIDS];
+  ushort asteroid_index;
+  seconds time_since_last_spawn;
 };
 
 #endif
