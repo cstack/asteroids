@@ -21,10 +21,13 @@ double clip(double value, double min, double max) {
   return value;
 }
 
+int num_calls_to_rand = 0;
 double rand(double min, double max) {
+  num_calls_to_rand++;
   double r = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
   return min + (max-min)*r;
 }
+int get_num_calls_to_rand() { return  num_calls_to_rand; }
 
 int sign(double value) {
   if (value > 0)

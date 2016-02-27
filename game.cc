@@ -3,6 +3,7 @@
 #include "platform/platform.h"
 #include "engine/rendering.h"
 #include "engine/util.h"
+#include "math.h"
 
 game_state_t game_state;
 
@@ -27,7 +28,9 @@ std::ostream &operator<<(std::ostream &os, asteroid_t const &asteroid) {
 }
 
 void initialize_game_state(game_state_t &game_state) {
-  srand (time(nullptr));
+  uint seed = time(nullptr);
+  srand(seed);
+  game_state.seed = seed;
 
   game_state.player.location.x = SCREEN_WIDTH/2;
   game_state.player.location.y = SCREEN_HEIGHT/2;
@@ -46,10 +49,35 @@ void initialize_game_state(game_state_t &game_state) {
   game_state.initialized = true;
 }
 
+#define DEBUG
+#ifdef DEBUG
+  std::ostream &operator<<(std::ostream &os, controller_t const &controller) {
+    return os << (controller.right_pressed ? ">" : ".") <<
+    " " << (controller.left_pressed ? "<" : ".") <<
+    " " << (controller.up_pressed ? "^" : ".") <<
+    " " << (controller.down_pressed ? "\\/" : ".") <<
+    " " << (controller.jump_pressed ? "o" : ".");
+  }
+
+  char hex_map[16] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+
+  std::ostream& hex_encode(std::ostream &os, char* data, size_t length) {
+    // Every byte is converted to two characters
+    for (int i=0; i<length; i++) {
+      os << std::hex << (uint) data[i] << std::dec;
+    }
+    return os;
+  }
+#endif
 void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
   if (!game_state.initialized) {
     initialize_game_state(game_state);
   }
+  game_state.num_calls_to_rand = get_num_calls_to_rand();
+  #ifdef DEBUG
+    std::cout << "update(" << dt << ", " << controller << ")" << std::endl;
+    hex_encode(std::cout, (char*) &game_state, sizeof(game_state)) << std::endl;
+  #endif
 
   clear_screen(pixel_buffer);
 
@@ -150,4 +178,12 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
     rotate(game_state.player.shape, game_state.player.direction),
     PLAYER_COLOR
   );
+
+  #ifdef DEBUG
+    assert(
+      isfinite(game_state.player.location.x) &&
+      isfinite(game_state.player.location.y),
+      "Player location has nan or inf values"
+    );
+  #endif
 }

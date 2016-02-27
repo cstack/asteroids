@@ -36,6 +36,8 @@ typedef double seconds;
 struct game_state_t {
   game_state_t() : initialized(false) {}
   bool initialized;
+  uint seed;
+  int num_calls_to_rand;
 
   player_t player;
 
