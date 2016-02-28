@@ -2,3 +2,5 @@
 *.bc
 *.pexe
 *.zip
+*.out
+*.exe

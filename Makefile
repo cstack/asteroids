@@ -15,7 +15,21 @@ LIBS=-lppapi_simple_cpp -lnacl_io -lsdk_util -lppapi_cpp -lppapi -lpthread
 all: game.pexe
 
 clean:
-	rm *.pexe *.bc *.o
+	rm *.pexe *.bc *.o test/*.out *.exe
+
+test_geometry.o: test/test_geometry.cc
+	g++ -c -o test_geometry.o -pthread test/test_geometry.cc
+
+testable_geometry.o: engine/geometry.cc
+	g++ -c -o testable_geometry.o -pthread engine/geometry.cc
+
+testable_util.o: engine/util.cc
+	g++ -c -o testable_util.o -pthread engine/util.cc
+
+test_geometry: test_geometry.o testable_geometry.o testable_util.o
+	g++ -o test_geometry.exe test_geometry.o testable_geometry.o testable_util.o
+	./test_geometry.exe > test/test_geometry.out
+	diff test/test_geometry.out test/test_geometry.fixture
 
 geometry.o: engine/geometry.cc
 	$(CXX) -c -o geometry.o -pthread engine/geometry.cc

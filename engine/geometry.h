@@ -26,14 +26,20 @@ struct polygon_t
   point_t points[MAX_POINTS_IN_POLYGON];
 };
 
-point_t translate_and_wrap(point_t location, meters dx, meters dy);
-point_t translate_and_wrap(point_t location, point_t delta);
-point_t translate(point_t location, meters dx, meters dy);
-point_t translate(point_t location, point_t delta);
-polygon_t rotate(polygon_t polygon, rotations angle);
-std::ostream &operator<<(std::ostream &os, point_t const &location);
-std::ostream &operator<<(std::ostream &os, polygon_t const &polygon);
-point_t vector(meters magnitude, rotations direction);
 point_t clip(point_t point, meters max_magnitude);
 
+// < 0  : left of line
+// == 0 : on line
+// > 0  : right of line
+int side_of_line(point_t p_test, point_t p1, point_t p2);
+
+polygon_t rotate(polygon_t polygon, rotations angle);
+point_t translate(point_t location, meters dx, meters dy);
+point_t translate(point_t location, point_t delta);
+point_t translate_and_wrap(point_t location, meters dx, meters dy);
+point_t translate_and_wrap(point_t location, point_t delta);
+point_t vector(meters magnitude, rotations direction);
+
+std::ostream &operator<<(std::ostream &os, point_t const &location);
+std::ostream &operator<<(std::ostream &os, polygon_t const &polygon);
 #endif
