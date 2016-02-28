@@ -94,7 +94,7 @@ int side_of_line(point_t p_test, point_t p1, point_t p2) {
   }
   double m = (p2.y - p1.y) / (p2.x - p1.x);
   double b = p1.y - m * p1.x;
-  int point_above_line = sign(p_test.y - m*p_test.x + b);
+  int point_above_line = sign(p_test.y - (m*p_test.x + b));
   int line_goes_left = p2.x < p1.x ? 1 : -1;
 
   return point_above_line * line_goes_left;
