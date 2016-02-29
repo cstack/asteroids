@@ -27,6 +27,7 @@ struct polygon_t
 };
 
 point_t clip(point_t point, meters max_magnitude);
+bool point_in_polygon(point_t point, polygon_t polygon);
 
 // < 0  : left of line
 // == 0 : on line

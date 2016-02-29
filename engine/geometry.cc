@@ -99,3 +99,15 @@ int side_of_line(point_t p_test, point_t p1, point_t p2) {
 
   return point_above_line * line_goes_left;
 }
+
+bool point_in_polygon(point_t point, polygon_t polygon) {
+  for (int i=1; i < polygon.num_points; i++) {
+    if (side_of_line(point, polygon.points[i-1], polygon.points[i]) < 0) {
+      return false;
+    }
+  }
+  if (side_of_line(point, polygon.points[polygon.num_points-1], polygon.points[0]) < 0) {
+    return false;
+  }
+  return true;
+}
