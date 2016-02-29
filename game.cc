@@ -130,11 +130,11 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
     asteroid.location = translate(game_state.player.location, SCREEN_WIDTH*rand(-0.5, 0.5), SCREEN_HEIGHT*rand(-0.5, 0.5));
     asteroid.direction = rand(0,1);
     asteroid.shape.num_points = 5;
-    asteroid.shape.points[0] = vector(rand(0.2, 1), 0);
-    asteroid.shape.points[1] = vector(rand(0.2, 1), 0.2);
-    asteroid.shape.points[2] = vector(rand(0.2, 1), 0.3);
-    asteroid.shape.points[3] = vector(rand(0.2, 1), 0.6);
-    asteroid.shape.points[4] = vector(rand(0.2, 1), 0.9);
+    asteroid.shape.points[0] = vector(rand(0.2, 1), 1-0);
+    asteroid.shape.points[1] = vector(rand(0.2, 1), 1-0.2);
+    asteroid.shape.points[2] = vector(rand(0.2, 1), 1-0.3);
+    asteroid.shape.points[3] = vector(rand(0.2, 1), 1-0.6);
+    asteroid.shape.points[4] = vector(rand(0.2, 1), 1-0.9);
   }
 
   // Move and render lasers
@@ -156,10 +156,18 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
     asteroid_t& asteroid = game_state.asteroids[i];
     if (asteroid.active) {
       asteroid.location = translate(asteroid.location, vector(ASTEROID_SPEED*dt, asteroid.direction));
+
+      polygon_t polygon = rotate(asteroid.shape, asteroid.direction);
+      point_t point = translate(game_state.player.location, -(asteroid.location.x), -(asteroid.location.y));
+      if (point_in_polygon(point, polygon)) {
+        asteroid.active = false;
+        continue;
+      }
+
       draw_polygon(
         pixel_buffer,
         asteroid.location,
-        rotate(asteroid.shape, asteroid.direction),
+        polygon,
         ASTEROID_COLOR
       );
     }
