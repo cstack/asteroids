@@ -76,7 +76,7 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
   clear_screen(pixel_buffer);
 
   // Rotate player
-  double delta_direction;
+  double delta_direction = 0;
   if (controller.right_pressed) {
     delta_direction -= PLAYER_ROTATIONS_PER_SECOND * dt;
   }
