@@ -173,6 +173,22 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
     }
   }
 
+  // Collide lasers with asteroids
+  for (int i = 0; i < NUM_ASTEROIDS; i++) {
+    asteroid_t& asteroid = game_state.asteroids[i];
+    if (asteroid.active) {
+      for (int j = 0; j < NUM_LASERS; j++) {
+        laser_t& laser = game_state.lasers[i];
+        if (laser.active) {
+          if (point_in_polygon(translate(laser.location, asteroid.location), rotate(asteroid.shape, asteroid.direction))) {
+            asteroid.active = false;
+            laser.active = false;
+          }
+        }
+      }
+    }
+  }
+
   // Move player
   game_state.player.location = translate_and_wrap(
     game_state.player.location,
