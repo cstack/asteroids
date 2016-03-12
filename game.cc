@@ -1,9 +1,15 @@
 #include "game.h"
 
+#define DEBUG
+
 #include "platform/platform.h"
 #include "engine/rendering.h"
 #include "engine/util.h"
 #include "math.h"
+
+#ifdef DEBUG
+  #include "engine/encoding.h"
+#endif
 
 game_state_t game_state;
 
@@ -49,34 +55,22 @@ void initialize_game_state(game_state_t &game_state) {
   game_state.initialized = true;
 }
 
-#define DEBUG
-#ifdef DEBUG
-  std::ostream &operator<<(std::ostream &os, controller_t const &controller) {
-    return os << (controller.right_pressed ? ">" : ".") <<
-    " " << (controller.left_pressed ? "<" : ".") <<
-    " " << (controller.up_pressed ? "^" : ".") <<
-    " " << (controller.down_pressed ? "\\/" : ".") <<
-    " " << (controller.jump_pressed ? "o" : ".");
-  }
-
-  char hex_map[16] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
-
-  std::ostream& hex_encode(std::ostream &os, char* data, size_t length) {
-    // Every byte is converted to two characters
-    for (int i=0; i<length; i++) {
-      os << std::hex << (uint) data[i] << std::dec;
-    }
-    return os;
-  }
-#endif
 void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
   if (!game_state.initialized) {
     initialize_game_state(game_state);
   }
   game_state.num_calls_to_rand = get_num_calls_to_rand();
   #ifdef DEBUG
-    std::cout << "update(" << dt << ", " << controller << ")" << std::endl;
-    hex_encode(std::cout, (char*) &game_state, sizeof(game_state)) << std::endl;
+    frame_t frame;
+    frame.dt = dt;
+    frame.controller = controller;
+    frame.game_state = game_state;
+    printf("Frame\n");
+    print_hex_encoded((uint*) &frame, sizeof(frame));
+
+    if (controller.down_pressed) {
+      assert(false, "Manually exiting game.");
+    }
   #endif
 
   clear_screen(pixel_buffer);

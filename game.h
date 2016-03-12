@@ -50,4 +50,11 @@ struct game_state_t {
   seconds time_since_last_spawn;
 };
 
+struct frame_t
+{
+  double dt;
+  controller_t controller;
+  game_state_t game_state;
+};
+
 #endif
