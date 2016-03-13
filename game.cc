@@ -1,7 +1,5 @@
 #include "game.h"
 
-#define DEBUG
-
 #include "platform/platform.h"
 #include "engine/rendering.h"
 #include "engine/util.h"
