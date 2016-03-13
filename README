@@ -7,3 +7,7 @@ Compile and serve the application with:
 Create a publishable Chrome app with:
 
 ./publish.sh
+
+Compile, run and attach gdb with:
+
+make debug
