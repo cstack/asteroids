@@ -11,14 +11,14 @@
 
 game_state_t game_state;
 
-const meters PLAYER_MAX_SPEED_METERS_PER_SECOND = 0.4;
-const rotations PLAYER_ROTATIONS_PER_SECOND = 1;
-const double PLAYER_ACCELERATION = 0.5;
+const meters PLAYER_MAX_SPEED_METERS_PER_SECOND = 0.35;
+const rotations PLAYER_ROTATIONS_PER_SECOND = 0.5;
+const double PLAYER_ACCELERATION = 0.4;
 const color_t PLAYER_COLOR = rgb(200, 200, 255);
 
 const meters LASER_LENGTH = 1;
 const color_t LASER_COLOR = rgb(255, 100, 100);
-const meters LASER_SPEED = 20;
+const meters LASER_SPEED = 15;
 
 const seconds TIME_PER_ASTEROID_SPAWN = 2;
 const meters ASTEROID_SPEED = 0.6;
@@ -53,7 +53,7 @@ void initialize_game_state(game_state_t &game_state) {
   game_state.initialized = true;
 }
 
-void user_triggered_breakpoint() {}
+void debugger() {} // Use this to place a breakpoint when running `make debug`
 
 void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
   if (!game_state.initialized) {
@@ -131,7 +131,7 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
   for (int i = 0; i < NUM_LASERS; i++) {
     laser_t& laser = game_state.lasers[i];
     if (laser.active) {
-      laser.location = translate(laser.location, vector(LASER_SPEED*dt, laser.direction));
+      laser.location = translate_and_wrap(laser.location, vector(LASER_SPEED*dt, laser.direction));
       draw_line(
         pixel_buffer,
         laser.location,
@@ -145,19 +145,12 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
   for (int i = 0; i < NUM_ASTEROIDS; i++) {
     asteroid_t& asteroid = game_state.asteroids[i];
     if (asteroid.active) {
-      asteroid.location = translate(asteroid.location, vector(ASTEROID_SPEED*dt, asteroid.direction));
-
-      polygon_t polygon = rotate(asteroid.shape, asteroid.direction);
-      point_t point = translate(game_state.player.location, -(asteroid.location.x), -(asteroid.location.y));
-      if (point_in_polygon(point, polygon)) {
-        asteroid.active = false;
-        continue;
-      }
+      asteroid.location = translate_and_wrap(asteroid.location, vector(ASTEROID_SPEED*dt, asteroid.direction));
 
       draw_polygon(
         pixel_buffer,
         asteroid.location,
-        polygon,
+        rotate(asteroid.shape, asteroid.direction),
         ASTEROID_COLOR
       );
     }
@@ -167,12 +160,17 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
   for (int i = 0; i < NUM_ASTEROIDS; i++) {
     asteroid_t& asteroid = game_state.asteroids[i];
     if (asteroid.active) {
+      polygon_t collison_box = rotate(asteroid.shape, asteroid.direction);
       for (int j = 0; j < NUM_LASERS; j++) {
-        laser_t& laser = game_state.lasers[i];
+        laser_t& laser = game_state.lasers[j];
         if (laser.active) {
-          if (point_in_polygon(translate(laser.location, asteroid.location), rotate(asteroid.shape, asteroid.direction))) {
+          point_t laser_back = translate(laser.location, asteroid.location.x * -1, asteroid.location.y * -1);
+          point_t laser_front = translate(laser_back, vector(LASER_LENGTH, laser.direction));
+
+          if (point_in_polygon(laser_front, collison_box) || point_in_polygon(laser_back, collison_box)) {
             asteroid.active = false;
             laser.active = false;
+            break;
           }
         }
       }

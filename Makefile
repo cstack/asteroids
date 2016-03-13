@@ -18,7 +18,7 @@ clean:
 	rm *.pexe *.bc *.o test/*.out *.exe
 
 debug: minimal_unstripped.bc
-	/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --enable-nacl --enable-nacl-debug --no-sandbox http://localhost:8000/ &
+	/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --enable-nacl --enable-nacl-debug --no-sandbox --incognito http://localhost:8000/ &
 	$(PEPPER_DIR)/toolchain/mac_x86_newlib/bin/x86_64-nacl-gdb -x script/setup-gdb
 
 test_geometry.o: test/test_geometry.cc
