@@ -17,6 +17,10 @@ all: game.pexe
 clean:
 	rm *.pexe *.bc *.o test/*.out *.exe
 
+debug: minimal_unstripped.bc
+	/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --enable-nacl --enable-nacl-debug --no-sandbox http://localhost:8000/ &
+	$(PEPPER_DIR)/toolchain/mac_x86_newlib/bin/x86_64-nacl-gdb -x script/setup-gdb
+
 test_geometry.o: test/test_geometry.cc
 	g++ -c -o test_geometry.o -pthread test/test_geometry.cc
 

@@ -1,0 +1,6 @@
+target remote localhost:4014
+remote get nexe game.nexe
+file game.nexe
+remote get irt game.irt
+nacl-irt game.irt
+break user_triggered_breakpoint

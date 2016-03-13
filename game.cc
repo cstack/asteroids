@@ -53,6 +53,8 @@ void initialize_game_state(game_state_t &game_state) {
   game_state.initialized = true;
 }
 
+void user_triggered_breakpoint() {}
+
 void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
   if (!game_state.initialized) {
     initialize_game_state(game_state);
@@ -65,10 +67,6 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
     frame.game_state = game_state;
     printf("Frame\n");
     print_hex_encoded((uint*) &frame, sizeof(frame));
-
-    if (controller.down_pressed) {
-      assert(false, "Manually exiting game.");
-    }
   #endif
 
   clear_screen(pixel_buffer);
