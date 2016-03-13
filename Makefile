@@ -32,19 +32,19 @@ test_geometry: test_geometry.o testable_geometry.o testable_util.o
 	diff test/test_geometry.out test/test_geometry.fixture
 
 geometry.o: engine/geometry.cc
-	$(CXX) -c -o geometry.o -pthread engine/geometry.cc
+	$(CXX) -c -g -o geometry.o -pthread engine/geometry.cc
 
 encoding.o: engine/encoding.cc
-	$(CXX) -c -o encoding.o -pthread engine/encoding.cc
+	$(CXX) -c -g -o encoding.o -pthread engine/encoding.cc
 
 rendering.o: engine/rendering.cc
-	$(CXX) -c -o rendering.o -pthread engine/rendering.cc
+	$(CXX) -c -g -o rendering.o -pthread engine/rendering.cc
 
 util.o: engine/util.cc
-	$(CXX) -c -o util.o -pthread engine/util.cc
+	$(CXX) -c -g -o util.o -pthread engine/util.cc
 
 game.o: game.cc
-	$(CXX) -c -o game.o -pthread game.cc
+	$(CXX) -c -g -o game.o -pthread game.cc
 
 testable_game.o: game.cc
 	g++ -c -o testable_game.o -pthread game.cc
@@ -63,7 +63,7 @@ test_game: test_game.o testable_game.o rendering_stub.o testable_geometry.o test
 	cat test/frame.txt | ./test_game.exe
 
 nacl.o: platform/nacl.cc
-	$(CXX) -c -o nacl.o -pthread -I $(PPAPI_INCLUDE) platform/nacl.cc
+	$(CXX) -c -g -o nacl.o -pthread -I $(PPAPI_INCLUDE) platform/nacl.cc
 
 minimal_unstripped.bc: game.o nacl.o encoding.o geometry.o rendering.o util.o
 	$(LINK) -o minimal_unstripped.bc -pthread -L "$(PPAPI_LIBDIR)" game.o nacl.o encoding.o geometry.o rendering.o util.o $(LIBS)

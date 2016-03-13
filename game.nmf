@@ -3,6 +3,10 @@
     "portable": {
       "pnacl-translate": {
         "url": "game.pexe"
+      },
+      "pnacl-debug": {
+        "url": "minimal_unstripped.bc",
+        "optlevel": 0
       }
     }
   }
