@@ -85,7 +85,7 @@ point_t clip(point_t point, meters max_magnitude) {
   return point;
 }
 
-int side_of_line(point_t p, line_t line) {
+int side_of_line(const point_t & p, const line_t & line) {
   if (line.p1.x == line.p2.x) {
     // Vertical line
     if (line.p2.y > line.p1.y) {
@@ -104,7 +104,7 @@ int side_of_line(point_t p, line_t line) {
   return point_above_line * line_goes_left;
 }
 
-bool point_in_polygon(point_t point, polygon_t polygon) {
+bool point_in_polygon(const point_t & point, const polygon_t & polygon) {
   for (int i=1; i < polygon.num_points; i++) {
     if (side_of_line(point, line_t(polygon.points[i-1], polygon.points[i])) < 0) {
       return false;
@@ -116,12 +116,12 @@ bool point_in_polygon(point_t point, polygon_t polygon) {
   return true;
 }
 
-bool lines_intersect(line_t l1, line_t l2) {
+bool lines_intersect(const line_t & l1, const line_t & l2) {
   return side_of_line(l1.p1, l2) != side_of_line(l1.p2, l2) &&
     side_of_line(l2.p1, l1) != side_of_line(l2.p2, l1);
 }
 
-bool line_intersects_polygon(line_t line, polygon_t polygon) {
+bool line_intersects_polygon(const line_t & line, const polygon_t & polygon) {
   point_t previous_point = polygon.points[polygon.num_points-1];
   for (int i = 0; i < polygon.num_points; i++) {
     line_t other_line = line_t(previous_point, polygon.points[i]);

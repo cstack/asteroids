@@ -38,14 +38,14 @@ struct polygon_t
 };
 
 point_t clip(point_t point, meters max_magnitude);
-bool lines_intersect(line_t l1, line_t l2);
-bool point_in_polygon(point_t point, polygon_t polygon);
-bool line_intersects_polygon(line_t line, polygon_t polygon);
+bool lines_intersect(const line_t & l1, const line_t & l2);
+bool point_in_polygon(const point_t & point, const polygon_t & polygon);
+bool line_intersects_polygon(const line_t & line, const polygon_t & polygon);
 
 // < 0  : left of line
 // == 0 : on line
 // > 0  : right of line
-int side_of_line(point_t p_test, line_t line);
+int side_of_line(const point_t & p_test, const line_t & line);
 
 polygon_t rotate(polygon_t polygon, rotations angle);
 point_t translate(point_t location, meters dx, meters dy);
