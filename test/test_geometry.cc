@@ -1,8 +1,8 @@
 #include "../engine/geometry.h"
 
-void test_side_of_line(point_t p_test, point_t p1, point_t p2) {
-  int result = side_of_line(p_test, p1, p2);
-  std::cout << "side_of_line(" << p_test << ", " << p1 << ", " << p2 << ") -> " << result << std::endl;
+void test_side_of_line(point_t p, line_t line) {
+  int result = side_of_line(p, line);
+  std::cout << "side_of_line(" << p << ", " << line << ") -> " << result << std::endl;
 }
 
 void test_point_in_polygon(point_t point, polygon_t polygon) {
@@ -22,19 +22,19 @@ int main() {
 
   p_test.x = 0;
   p_test.y = 1;
-  test_side_of_line(p_test, p1, p2);
+  test_side_of_line(p_test, line_t(0, 0, 1, 1));
 
   p_test.x = 1;
   p_test.y = 1;
-  test_side_of_line(p_test, p1, p2);
+  test_side_of_line(p_test, line_t(0, 0, 1, 1));
 
   p_test.x = 1;
   p_test.y = 0;
-  test_side_of_line(p_test, p1, p2);
+  test_side_of_line(p_test, line_t(0, 0, 1, 1));
 
   p_test.x = 0;
   p_test.y = -1;
-  test_side_of_line(p_test, p1, p2);
+  test_side_of_line(p_test, line_t(0, 0, 1, 1));
 
   p1.x = 1;
   p1.y = 1;
@@ -43,11 +43,11 @@ int main() {
 
   p_test.x = 0;
   p_test.y = 1;
-  test_side_of_line(p_test, p1, p2);
+  test_side_of_line(p_test, line_t(1, 1, 0, 0));
 
   p_test.x = 1;
   p_test.y = 0;
-  test_side_of_line(p_test, p1, p2);
+  test_side_of_line(p_test, line_t(1, 1, 0, 0));
 
   p1.x = 0;
   p1.y = 0;
@@ -56,15 +56,15 @@ int main() {
 
   p_test.x = 0;
   p_test.y = 0;
-  test_side_of_line(p_test, p1, p2);
+  test_side_of_line(p_test, line_t(0, 0, 0, 1));
 
   p_test.x = 1;
   p_test.y = 0;
-  test_side_of_line(p_test, p1, p2);
+  test_side_of_line(p_test, line_t(0, 0, 0, 1));
 
   p_test.x = -1;
   p_test.y = 0;
-  test_side_of_line(p_test, p1, p2);
+  test_side_of_line(p_test, line_t(0, 0, 0, 1));
 
   p1.x = 0;
   p1.y = 0;
@@ -73,15 +73,15 @@ int main() {
 
   p_test.x = 0;
   p_test.y = 0;
-  test_side_of_line(p_test, p1, p2);
+  test_side_of_line(p_test, line_t(0, 0, 0, -1));
 
   p_test.x = 1;
   p_test.y = 0;
-  test_side_of_line(p_test, p1, p2);
+  test_side_of_line(p_test, line_t(0, 0, 0, -1));
 
   p_test.x = -1;
   p_test.y = 0;
-  test_side_of_line(p_test, p1, p2);
+  test_side_of_line(p_test, line_t(0, 0, 0, -1));
 
   p1.x = 0;
   p1.y = 0;
@@ -90,15 +90,15 @@ int main() {
 
   p_test.x = 0;
   p_test.y = 0;
-  test_side_of_line(p_test, p1, p2);
+  test_side_of_line(p_test, line_t(0, 0, 1, 0));
 
   p_test.x = 0;
   p_test.y = 1;
-  test_side_of_line(p_test, p1, p2);
+  test_side_of_line(p_test, line_t(0, 0, 1, 0));
 
   p_test.x = 0;
   p_test.y = -1;
-  test_side_of_line(p_test, p1, p2);
+  test_side_of_line(p_test, line_t(0, 0, 1, 0));
 
   p_test.x = 0;
   p_test.y = 0;
@@ -106,7 +106,7 @@ int main() {
   p1.y = 0;
   p2.x = 0;
   p2.y = -1;
-  test_side_of_line(p_test, p1, p2);
+  test_side_of_line(p_test, line_t(1, 0, 0, -1));
 
   p_test.x = 0.5;
   p_test.y = 0.6;
@@ -114,7 +114,7 @@ int main() {
   p1.y = 1;
   p2.x = 1;
   p2.y = 0;
-  test_side_of_line(p_test, p1, p2);
+  test_side_of_line(p_test, line_t(0, 1, 1, 0));
 
   point_t point;
   polygon_t polygon;

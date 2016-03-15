@@ -14,6 +14,10 @@ std::ostream &operator<<(std::ostream &os, polygon_t const &polygon) {
   return os;
 }
 
+std::ostream &operator<<(std::ostream &os, line_t const &line) {
+  return os << "line(" << line.p1 << ", " << line.p2 << ")";
+}
+
 point_t translate_and_wrap(point_t location, meters dx, meters dy) {
   location.x = wrap(location.x + dx, 0, SCREEN_WIDTH);
   location.y = wrap(location.y + dy, 0, SCREEN_HEIGHT);
@@ -81,32 +85,32 @@ point_t clip(point_t point, meters max_magnitude) {
   return point;
 }
 
-int side_of_line(point_t p_test, point_t p1, point_t p2) {
-  if (p1.x == p2.x) {
+int side_of_line(point_t p, line_t line) {
+  if (line.p1.x == line.p2.x) {
     // Vertical line
-    if (p2.y > p1.y) {
+    if (line.p2.y > line.p1.y) {
       // Going up
-      return sign(p_test.x - p1.x);
+      return sign(p.x - line.p1.x);
     } else {
       // Going down
-      return sign(p1.x - p_test.x);
+      return sign(line.p1.x - p.x);
     }
   }
-  double m = (p2.y - p1.y) / (p2.x - p1.x);
-  double b = p1.y - m * p1.x;
-  int point_above_line = sign(p_test.y - (m*p_test.x + b));
-  int line_goes_left = p2.x < p1.x ? 1 : -1;
+  double m = (line.p2.y - line.p1.y) / (line.p2.x - line.p1.x);
+  double b = line.p1.y - m * line.p1.x;
+  int point_above_line = sign(p.y - (m*p.x + b));
+  int line_goes_left = line.p2.x < line.p1.x ? 1 : -1;
 
   return point_above_line * line_goes_left;
 }
 
 bool point_in_polygon(point_t point, polygon_t polygon) {
   for (int i=1; i < polygon.num_points; i++) {
-    if (side_of_line(point, polygon.points[i-1], polygon.points[i]) < 0) {
+    if (side_of_line(point, line_t(polygon.points[i-1], polygon.points[i])) < 0) {
       return false;
     }
   }
-  if (side_of_line(point, polygon.points[polygon.num_points-1], polygon.points[0]) < 0) {
+  if (side_of_line(point, line_t(polygon.points[polygon.num_points-1], polygon.points[0])) < 0) {
     return false;
   }
   return true;
