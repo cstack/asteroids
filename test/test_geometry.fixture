@@ -20,3 +20,10 @@ point_in_polygon((1, 0), polygon(3) (1, 0) (0, -1) (0, 1)) -> 1
 point_in_polygon((2, 0), polygon(3) (1, 0) (0, -1) (0, 1)) -> 0
 point_in_polygon((0.5, 0.5), polygon(3) (1, 0) (0, -1) (0, 1)) -> 1
 point_in_polygon((0.5, 0.6), polygon(3) (1, 0) (0, -1) (0, 1)) -> 0
+lines_intersect(line((0, 0), (1, 1)), line((0, 1), (1, 0))) -> 1
+lines_intersect(line((-1, 1), (1, -1)), line((0, -1), (1, 0))) -> 1
+lines_intersect(line((0, 0), (1, 1)), line((0, -1), (1, 0))) -> 0
+lines_intersect(line((0, 0), (0, 1)), line((1, 1), (1, 0))) -> 0
+lines_intersect(line((0, 0), (1, 1)), line((0, 0), (1, 1))) -> 0
+lines_intersect(line((0, 0), (1, 0)), line((0.5, 0.5), (0.5, 1))) -> 0
+lines_intersect(line((0, 0), (1, 0)), line((0.5, -0.5), (0.5, 0.5))) -> 1

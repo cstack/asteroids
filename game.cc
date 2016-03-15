@@ -166,8 +166,9 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
         if (laser.active) {
           point_t laser_back = translate(laser.location, asteroid.location.x * -1, asteroid.location.y * -1);
           point_t laser_front = translate(laser_back, vector(LASER_LENGTH, laser.direction));
+          line_t laser_line = line_t(laser_back, laser_front);
 
-          if (point_in_polygon(laser_front, collison_box) || point_in_polygon(laser_back, collison_box)) {
+          if (line_intersects_polygon(laser_line, collison_box)) {
             asteroid.active = false;
             laser.active = false;
             break;

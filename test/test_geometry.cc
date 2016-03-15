@@ -10,6 +10,11 @@ void test_point_in_polygon(point_t point, polygon_t polygon) {
   std::cout << "point_in_polygon(" << point << ", " << polygon << ") -> " << result << std::endl;
 }
 
+void test_lines_intersect(line_t l1, line_t l2) {
+  bool result = lines_intersect(l1, l2);
+  std::cout << "lines_intersect(" << l1 << ", " << l2 << ") -> " << result << std::endl;
+}
+
 int main() {
   point_t p_test;
   point_t p1;
@@ -146,4 +151,12 @@ int main() {
   point.x = 0.5;
   point.y = 0.6;
   test_point_in_polygon(point, polygon);
+
+  test_lines_intersect(line_t(0, 0, 1, 1), line_t(0, 1, 1, 0));
+  test_lines_intersect(line_t(-1, 1, 1, -1), line_t(0, -1, 1, 0));
+  test_lines_intersect(line_t(0, 0, 1, 1), line_t(0, -1, 1, 0));
+  test_lines_intersect(line_t(0, 0, 0, 1), line_t(1, 1, 1, 0));
+  test_lines_intersect(line_t(0, 0, 1, 1), line_t(0, 0, 1, 1));
+  test_lines_intersect(line_t(0, 0, 1, 0), line_t(0.5, 0.5, 0.5, 1));
+  test_lines_intersect(line_t(0, 0, 1, 0), line_t(0.5, -0.5, 0.5, 0.5));
 }

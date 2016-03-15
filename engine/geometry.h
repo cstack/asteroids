@@ -38,7 +38,9 @@ struct polygon_t
 };
 
 point_t clip(point_t point, meters max_magnitude);
+bool lines_intersect(line_t l1, line_t l2);
 bool point_in_polygon(point_t point, polygon_t polygon);
+bool line_intersects_polygon(line_t line, polygon_t polygon);
 
 // < 0  : left of line
 // == 0 : on line

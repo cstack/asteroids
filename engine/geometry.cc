@@ -115,3 +115,20 @@ bool point_in_polygon(point_t point, polygon_t polygon) {
   }
   return true;
 }
+
+bool lines_intersect(line_t l1, line_t l2) {
+  return side_of_line(l1.p1, l2) != side_of_line(l1.p2, l2) &&
+    side_of_line(l2.p1, l1) != side_of_line(l2.p2, l1);
+}
+
+bool line_intersects_polygon(line_t line, polygon_t polygon) {
+  point_t previous_point = polygon.points[polygon.num_points-1];
+  for (int i = 0; i < polygon.num_points; i++) {
+    line_t other_line = line_t(previous_point, polygon.points[i]);
+    if (lines_intersect(line, other_line)) {
+      return true;
+    }
+    previous_point = polygon.points[i];
+  }
+  return false;
+}
