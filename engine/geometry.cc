@@ -132,3 +132,12 @@ bool line_intersects_polygon(const line_t & line, const polygon_t & polygon) {
   }
   return false;
 }
+
+point_t operator*(const point_t & point, const double & scalar) {
+  return point_t(point.x*scalar, point.y*scalar);
+}
+
+void point_t::operator+=(const point_t & other) {
+  this->x += other.x;
+  this->y += other.y;
+}

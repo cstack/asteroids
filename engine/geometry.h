@@ -17,6 +17,7 @@ struct point_t {
   // Location in space relative to origin (bottom left of screen)
   explicit point_t(meters x_ = 0, meters y_ = 0):
     x(x_), y(y_) {}
+  void operator+=(const point_t & other);
   meters x;
   meters y;
 };
@@ -57,4 +58,5 @@ point_t vector(meters magnitude, rotations direction);
 std::ostream &operator<<(std::ostream &os, point_t const &location);
 std::ostream &operator<<(std::ostream &os, polygon_t const &polygon);
 std::ostream &operator<<(std::ostream &os, line_t const &line);
+point_t operator*(const point_t & point, const double & scalar);
 #endif

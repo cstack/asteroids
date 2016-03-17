@@ -11,9 +11,10 @@
 
 game_state_t game_state;
 
-const meters PLAYER_MAX_SPEED_METERS_PER_SECOND = 0.35;
+const meters PLAYER_MAX_SPEED_METERS_PER_SECOND = 0.3;
 const rotations PLAYER_ROTATIONS_PER_SECOND = 0.5;
 const double PLAYER_ACCELERATION = 0.4;
+const double PLAYER_DECELERATION = 0.2;
 const color_t PLAYER_COLOR = rgb(200, 200, 255);
 
 const meters LASER_LENGTH = 1;
@@ -82,21 +83,25 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
   game_state.player.direction = wrap(game_state.player.direction + delta_direction, 0, 1);
 
   // Accelerate player
+  point_t delta_v;
   if (controller.up_pressed) {
-    point_t delta_v = vector(
+    delta_v += vector(
       PLAYER_ACCELERATION * dt,
       game_state.player.direction
     );
-    point_t new_v = translate(
-      game_state.player.velocity,
-      delta_v
-    );
-    point_t clipped_v = clip(
-      new_v,
-      PLAYER_MAX_SPEED_METERS_PER_SECOND
-    );
-    game_state.player.velocity = clipped_v;
   }
+
+  delta_v += game_state.player.velocity * -1 * dt;
+
+  point_t new_v = translate(
+    game_state.player.velocity,
+    delta_v
+  );
+  point_t clipped_v = clip(
+    new_v,
+    PLAYER_MAX_SPEED_METERS_PER_SECOND
+  );
+  game_state.player.velocity = clipped_v;
 
   // Fire Laser
   if (controller.jump_pressed && game_state.can_fire) {
