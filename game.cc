@@ -20,6 +20,7 @@ const color_t PLAYER_COLOR = rgb(200, 200, 255);
 const meters LASER_LENGTH = 1;
 const color_t LASER_COLOR = rgb(255, 100, 100);
 const meters LASER_SPEED = 15;
+const seconds LASER_TTL = 1;
 
 const seconds TIME_PER_ASTEROID_SPAWN = 2;
 const meters ASTEROID_SPEED = 0.6;
@@ -52,6 +53,24 @@ void initialize_game_state(game_state_t &game_state) {
   game_state.player.direction = UP;
 
   game_state.initialized = true;
+}
+
+uint find_available_slot(const asteroid_t * asteroids, uint num_asteroids) {
+  for (uint i=0; i < num_asteroids; i++) {
+    if (!asteroids[i].active) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+uint find_available_slot(const laser_t * lasers, uint num_lasers) {
+  for (uint i=0; i < num_lasers; i++) {
+    if (!lasers[i].active) {
+      return i;
+    }
+  }
+  return -1;
 }
 
 void debugger() {} // Use this to place a breakpoint when running `make debug`
@@ -105,12 +124,15 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
 
   // Fire Laser
   if (controller.jump_pressed && game_state.can_fire) {
-    game_state.can_fire = false;
-    laser_t& laser = game_state.lasers[game_state.laser_index];
-    laser.active = true;
-    laser.location = game_state.player.location;
-    laser.direction = game_state.player.direction;
-    game_state.laser_index = (game_state.laser_index + 1) % NUM_LASERS;
+    uint i = find_available_slot(game_state.lasers, NUM_LASERS);
+    if (i != -1) {
+      game_state.can_fire = false;
+      laser_t& laser = game_state.lasers[i];
+      laser.active = true;
+      laser.location = game_state.player.location;
+      laser.direction = game_state.player.direction;
+      laser.ttl = LASER_TTL;
+    }
   } else if (!controller.jump_pressed) {
     game_state.can_fire = true;
   }
@@ -119,17 +141,19 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
   game_state.time_since_last_spawn += dt;
   if (game_state.time_since_last_spawn >= TIME_PER_ASTEROID_SPAWN) {
     game_state.time_since_last_spawn -= TIME_PER_ASTEROID_SPAWN;
-    asteroid_t& asteroid = game_state.asteroids[game_state.asteroid_index];
-    game_state.asteroid_index = (game_state.asteroid_index+1) % NUM_ASTEROIDS;
-    asteroid.active = true;
-    asteroid.location = translate(game_state.player.location, SCREEN_WIDTH*rand(-0.5, 0.5), SCREEN_HEIGHT*rand(-0.5, 0.5));
-    asteroid.direction = rand(0,1);
-    asteroid.shape.num_points = 5;
-    asteroid.shape.points[0] = vector(rand(0.2, 1), 1-0);
-    asteroid.shape.points[1] = vector(rand(0.2, 1), 1-0.2);
-    asteroid.shape.points[2] = vector(rand(0.2, 1), 1-0.3);
-    asteroid.shape.points[3] = vector(rand(0.2, 1), 1-0.6);
-    asteroid.shape.points[4] = vector(rand(0.2, 1), 1-0.9);
+    uint i = find_available_slot(game_state.asteroids, NUM_ASTEROIDS);
+    if (i != -1) {
+      asteroid_t& asteroid = game_state.asteroids[i];
+      asteroid.active = true;
+      asteroid.location = translate(game_state.player.location, SCREEN_WIDTH*rand(-0.5, 0.5), SCREEN_HEIGHT*rand(-0.5, 0.5));
+      asteroid.direction = rand(0,1);
+      asteroid.shape.num_points = 5;
+      asteroid.shape.points[0] = vector(rand(0.2, 1), 1-0);
+      asteroid.shape.points[1] = vector(rand(0.2, 1), 1-0.2);
+      asteroid.shape.points[2] = vector(rand(0.2, 1), 1-0.3);
+      asteroid.shape.points[3] = vector(rand(0.2, 1), 1-0.6);
+      asteroid.shape.points[4] = vector(rand(0.2, 1), 1-0.9);
+    }
   }
 
   // Move and render lasers
@@ -143,6 +167,11 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
         translate(laser.location, vector(LASER_LENGTH, laser.direction)),
         LASER_COLOR
       );
+
+      laser.ttl -= dt;
+      if (laser.ttl <= 0) {
+        laser.active = false;
+      }
     }
   }
 

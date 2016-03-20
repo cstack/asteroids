@@ -6,6 +6,8 @@
 
 #include <iostream>
 
+typedef double seconds;
+
 struct player_t
 {
   point_t location;
@@ -20,6 +22,7 @@ struct laser_t
   bool active;
   point_t location;
   rotations direction;
+  seconds ttl;
 };
 
 #define NUM_ASTEROIDS 10
@@ -31,8 +34,6 @@ struct asteroid_t
   rotations direction;
 };
 
-typedef double seconds;
-
 struct game_state_t {
   game_state_t() : initialized(false) {}
   bool initialized;
@@ -43,10 +44,8 @@ struct game_state_t {
 
   laser_t lasers[NUM_LASERS];
   bool can_fire;
-  ushort laser_index;
 
   asteroid_t asteroids[NUM_ASTEROIDS];
-  ushort asteroid_index;
   seconds time_since_last_spawn;
 };
 

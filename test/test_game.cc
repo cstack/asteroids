@@ -8,7 +8,6 @@ std::ostream &operator<<(std::ostream &os, game_state_t* const &game_state) {
   "num_calls_to_rand " << game_state->num_calls_to_rand << std::endl <<
   "can_fire " << game_state->can_fire << std::endl <<
   "laser_index " << game_state->laser_index << std::endl <<
-  "asteroid_index " << game_state->asteroid_index << std::endl <<
   "time_since_last_spawn " << game_state->time_since_last_spawn << std::endl;
 }
 
