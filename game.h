@@ -10,6 +10,7 @@ typedef double seconds;
 
 struct player_t
 {
+  seconds time_to_respawn;
   point_t location;
   polygon_t shape;
   rotations direction;

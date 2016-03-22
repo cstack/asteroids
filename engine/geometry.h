@@ -42,15 +42,17 @@ point_t clip(point_t point, meters max_magnitude);
 bool lines_intersect(const line_t & l1, const line_t & l2);
 bool point_in_polygon(const point_t & point, const polygon_t & polygon);
 bool line_intersects_polygon(const line_t & line, const polygon_t & polygon);
+bool polygons_intersect(const polygon_t & p1, const polygon_t & p2);
+polygon_t rotate(polygon_t polygon, rotations angle);
 
 // < 0  : left of line
 // == 0 : on line
 // > 0  : right of line
 int side_of_line(const point_t & p_test, const line_t & line);
 
-polygon_t rotate(polygon_t polygon, rotations angle);
 point_t translate(point_t location, meters dx, meters dy);
 point_t translate(point_t location, point_t delta);
+polygon_t translate(const polygon_t & polygon, const point_t & delta);
 point_t translate_and_wrap(point_t location, meters dx, meters dy);
 point_t translate_and_wrap(point_t location, point_t delta);
 point_t vector(meters magnitude, rotations direction);
@@ -59,4 +61,5 @@ std::ostream &operator<<(std::ostream &os, point_t const &location);
 std::ostream &operator<<(std::ostream &os, polygon_t const &polygon);
 std::ostream &operator<<(std::ostream &os, line_t const &line);
 point_t operator*(const point_t & point, const double & scalar);
+point_t operator-(const point_t & p1, const point_t & p2);
 #endif

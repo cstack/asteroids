@@ -38,6 +38,7 @@ void initialize_game_state(game_state_t &game_state) {
   srand(seed);
   game_state.seed = seed;
 
+  game_state.player.time_to_respawn = 0;
   game_state.player.location.x = SCREEN_WIDTH/2;
   game_state.player.location.y = SCREEN_HEIGHT/2;
 
@@ -91,26 +92,32 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
 
   clear_screen(pixel_buffer);
 
-  // Rotate player
-  double delta_direction = 0;
-  if (controller.right_pressed) {
-    delta_direction -= PLAYER_ROTATIONS_PER_SECOND * dt;
-  }
-  if (controller.left_pressed) {
-    delta_direction += PLAYER_ROTATIONS_PER_SECOND * dt;
-  }
-  game_state.player.direction = wrap(game_state.player.direction + delta_direction, 0, 1);
-
-  // Accelerate player
-  point_t delta_v;
-  if (controller.up_pressed) {
-    delta_v += vector(
-      PLAYER_ACCELERATION * dt,
-      game_state.player.direction
-    );
+  // Respawn
+  if (game_state.player.time_to_respawn > 0) {
+    game_state.player.time_to_respawn = clip(game_state.player.time_to_respawn - dt, 0, 120);
   }
 
-  delta_v += game_state.player.velocity * -1 * dt;
+  point_t delta_v = game_state.player.velocity * -1 * dt; // Friction
+
+  if (game_state.player.time_to_respawn == 0) {
+    // Rotate player
+    double delta_direction = 0;
+    if (controller.right_pressed) {
+      delta_direction -= PLAYER_ROTATIONS_PER_SECOND * dt;
+    }
+    if (controller.left_pressed) {
+      delta_direction += PLAYER_ROTATIONS_PER_SECOND * dt;
+    }
+    game_state.player.direction = wrap(game_state.player.direction + delta_direction, 0, 1);
+
+    // Accelerate player
+    if (controller.up_pressed) {
+      delta_v += vector(
+        PLAYER_ACCELERATION * dt,
+        game_state.player.direction
+      );
+    }
+  }
 
   point_t new_v = translate(
     game_state.player.velocity,
@@ -123,7 +130,7 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
   game_state.player.velocity = clipped_v;
 
   // Fire Laser
-  if (controller.jump_pressed && game_state.can_fire) {
+  if (controller.jump_pressed && game_state.can_fire && game_state.player.time_to_respawn == 0) {
     uint i = find_available_slot(game_state.lasers, NUM_LASERS);
     if (i != -1) {
       game_state.can_fire = false;
@@ -190,11 +197,14 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
     }
   }
 
-  // Collide lasers with asteroids
+  // Collide asteroids with lasers and player
+  polygon_t rotated_player_shape = rotate(game_state.player.shape, game_state.player.direction);
   for (int i = 0; i < NUM_ASTEROIDS; i++) {
     asteroid_t& asteroid = game_state.asteroids[i];
     if (asteroid.active) {
-      polygon_t collison_box = rotate(asteroid.shape, asteroid.direction);
+      polygon_t asteroid_collison_box = rotate(asteroid.shape, asteroid.direction);
+
+      // Collide with lasers
       for (int j = 0; j < NUM_LASERS; j++) {
         laser_t& laser = game_state.lasers[j];
         if (laser.active) {
@@ -202,12 +212,18 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
           point_t laser_front = translate(laser_back, vector(LASER_LENGTH, laser.direction));
           line_t laser_line = line_t(laser_back, laser_front);
 
-          if (line_intersects_polygon(laser_line, collison_box)) {
+          if (line_intersects_polygon(laser_line, asteroid_collison_box)) {
             asteroid.active = false;
             laser.active = false;
             break;
           }
         }
+      }
+
+      // Collide with player
+      polygon_t player_collison_box = translate(rotated_player_shape, game_state.player.location - asteroid.location);
+      if (polygons_intersect(asteroid_collison_box, player_collison_box)) {
+        game_state.player.time_to_respawn = 3;
       }
     }
   }
@@ -222,8 +238,8 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
   draw_polygon(
     pixel_buffer,
     game_state.player.location,
-    rotate(game_state.player.shape, game_state.player.direction),
-    PLAYER_COLOR
+    rotated_player_shape,
+    game_state.player.time_to_respawn == 0 ? PLAYER_COLOR : rgb(255, 0, (3 - game_state.player.time_to_respawn)/3*255)
   );
 
   #ifdef DEBUG

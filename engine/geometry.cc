@@ -121,14 +121,18 @@ bool lines_intersect(const line_t & l1, const line_t & l2) {
     side_of_line(l2.p1, l1) != side_of_line(l2.p2, l1);
 }
 
+line_t line_of_polygon(const polygon_t & polygon, uint i) {
+  assert(i < polygon.num_points, "index outside bounds of points of polygon");
+  const point_t & p1 = polygon.points[i];
+  const point_t & p2 = polygon.points[(i+1)%polygon.num_points];
+  return line_t(p1, p2);
+}
+
 bool line_intersects_polygon(const line_t & line, const polygon_t & polygon) {
-  point_t previous_point = polygon.points[polygon.num_points-1];
   for (int i = 0; i < polygon.num_points; i++) {
-    line_t other_line = line_t(previous_point, polygon.points[i]);
-    if (lines_intersect(line, other_line)) {
+    if (lines_intersect(line, line_of_polygon(polygon, i))) {
       return true;
     }
-    previous_point = polygon.points[i];
   }
   return false;
 }
@@ -140,4 +144,30 @@ point_t operator*(const point_t & point, const double & scalar) {
 void point_t::operator+=(const point_t & other) {
   this->x += other.x;
   this->y += other.y;
+}
+
+bool polygons_intersect(const polygon_t & p1, const polygon_t & p2) {
+  for (int i = 0; i < p1.num_points; i++) {
+    const line_t & l1 = line_of_polygon(p1, i);
+    for (int j = 0; j < p2.num_points; j++) {
+       const line_t & l2 = line_of_polygon(p2, j);
+      if (lines_intersect(l1, l2)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+point_t operator-(const point_t & p1, const point_t & p2) {
+  return point_t(p1.x-p2.x, p1.y-p2.y);
+}
+
+polygon_t translate(const polygon_t & polygon, const point_t & delta) {
+  polygon_t result;
+  result.num_points = polygon.num_points;
+  for (int i=0; i < polygon.num_points; i++) {
+    result.points[i] = translate(polygon.points[i], delta);
+  }
+  return result;
 }
