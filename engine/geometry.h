@@ -44,6 +44,7 @@ bool point_in_polygon(const point_t & point, const polygon_t & polygon);
 bool line_intersects_polygon(const line_t & line, const polygon_t & polygon);
 bool polygons_intersect(const polygon_t & p1, const polygon_t & p2);
 polygon_t rotate(polygon_t polygon, rotations angle);
+polygon_t scale(const polygon_t & p, double s);
 
 // < 0  : left of line
 // == 0 : on line

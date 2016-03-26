@@ -26,6 +26,18 @@ const seconds TIME_PER_ASTEROID_SPAWN = 2;
 const meters ASTEROID_SPEED = 0.6;
 const color_t ASTEROID_COLOR = rgb(200, 100, 200);
 
+polygon_t player_shape() {
+  // Triangle
+  polygon_t result;
+  result.num_points = 3;
+  result.points[0] = point_t(0.5, 0);
+  result.points[1] = point_t(-0.5, -0.3);
+  result.points[2] = point_t(-0.5, 0.3);
+  return result;
+}
+const polygon_t PLAYER_SHAPE = player_shape();
+const polygon_t LIFE_ICON = scale(rotate(PLAYER_SHAPE, 0.25), 0.5);
+
 std::ostream &operator<<(std::ostream &os, asteroid_t const &asteroid) {
   return os << "asteroid " <<
     (asteroid.active ? "active" : "inactive") <<
@@ -33,7 +45,7 @@ std::ostream &operator<<(std::ostream &os, asteroid_t const &asteroid) {
     " " << asteroid.shape;
 }
 
-void initialize_game_state(game_state_t &game_state) {
+void initialize_game_state(game_state_t & game_state) {
   uint seed = time(nullptr);
   srand(seed);
   game_state.seed = seed;
@@ -41,17 +53,10 @@ void initialize_game_state(game_state_t &game_state) {
   game_state.player.time_to_respawn = 0;
   game_state.player.location.x = SCREEN_WIDTH/2;
   game_state.player.location.y = SCREEN_HEIGHT/2;
-
-  // Triangle
-  game_state.player.shape.num_points = 3;
-  game_state.player.shape.points[0].x = 0.5;
-  game_state.player.shape.points[0].y = 0;
-  game_state.player.shape.points[1].x = -0.5;
-  game_state.player.shape.points[1].y = -0.3;
-  game_state.player.shape.points[2].x = -0.5;
-  game_state.player.shape.points[2].y = 0.3;
-
+  game_state.player.shape = PLAYER_SHAPE;
   game_state.player.direction = UP;
+
+  game_state.lives = 3;
 
   game_state.initialized = true;
 }
@@ -95,6 +100,19 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
   // Respawn
   if (game_state.player.time_to_respawn > 0) {
     game_state.player.time_to_respawn = clip(game_state.player.time_to_respawn - dt, 0, 120);
+
+    if (game_state.player.time_to_respawn == 0) {
+      game_state.player.location.x = SCREEN_WIDTH/2;
+      game_state.player.location.y = SCREEN_HEIGHT/2;
+      game_state.player.direction = UP;
+
+      game_state.lives -= 1;
+      if (game_state.lives == 0) {
+        // For now, just restart game
+        game_state = game_state_t();
+        return;
+      }
+    }
   }
 
   point_t delta_v = game_state.player.velocity * -1 * dt; // Friction
@@ -221,9 +239,12 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
       }
 
       // Collide with player
-      polygon_t player_collison_box = translate(rotated_player_shape, game_state.player.location - asteroid.location);
-      if (polygons_intersect(asteroid_collison_box, player_collison_box)) {
-        game_state.player.time_to_respawn = 3;
+      if (game_state.player.time_to_respawn == 0) {
+        polygon_t player_collison_box = translate(rotated_player_shape, game_state.player.location - asteroid.location);
+        if (polygons_intersect(asteroid_collison_box, player_collison_box)) {
+          game_state.player.time_to_respawn = 3;
+          asteroid.active = false;
+        }
       }
     }
   }
@@ -241,6 +262,19 @@ void update(double dt, pixel_buffer_t* pixel_buffer, controller_t &controller) {
     rotated_player_shape,
     game_state.player.time_to_respawn == 0 ? PLAYER_COLOR : rgb(255, 0, (3 - game_state.player.time_to_respawn)/3*255)
   );
+
+  // Render life indictors
+  for (int i = 0; i < game_state.lives; i++) {
+    draw_polygon(
+      pixel_buffer,
+      point_t(
+        1 + i*0.5,
+        SCREEN_HEIGHT - 1
+      ),
+      LIFE_ICON,
+      PLAYER_COLOR
+    );
+  }
 
   #ifdef DEBUG
     assert(

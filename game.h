@@ -40,6 +40,7 @@ struct game_state_t {
   bool initialized;
   uint seed;
   int num_calls_to_rand;
+  int lives;
 
   player_t player;
 
@@ -48,6 +49,9 @@ struct game_state_t {
 
   asteroid_t asteroids[NUM_ASTEROIDS];
   seconds time_since_last_spawn;
+
+  private:
+    game_state_t( const game_state_t & obj); // Don't pass this by reference
 };
 
 struct frame_t

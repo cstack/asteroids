@@ -171,3 +171,13 @@ polygon_t translate(const polygon_t & polygon, const point_t & delta) {
   }
   return result;
 }
+
+polygon_t scale(const polygon_t & p, double s) {
+  polygon_t result;
+  result.num_points = p.num_points;
+  for (int i = 0; i < p.num_points; i++) {
+    result.points[i].x = p.points[i].x * s;
+    result.points[i].y = p.points[i].y * s;
+  }
+  return result;
+}
